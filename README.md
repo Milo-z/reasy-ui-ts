@@ -48,7 +48,7 @@
 | ignore         | false                  | boolean  | 是否忽略验证                                                 |
 | disabled       | false                  | boolean  | 是否禁用                                                     |
 | error          |                        | string   | 错误信息                                                     |
-|                |                        | string   | 自定义错误信息                                               |
+| msg            |                        | string   | 自定义错误信息                                               |
 | name           |                        | string   | 名称                                                         |
 | value          |                        | any      | 值                                                           |
 | hasSelectAll   | false                  | boolean  | 是否有全选                                                   |
