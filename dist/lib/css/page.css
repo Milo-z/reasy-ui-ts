@@ -1,0 +1,11 @@
+.collapse-active {
+  -webkit-transition: height .5s;
+  -o-transition: height .5s;
+  transition: height .5s;
+  position: relative;
+}
+
+.collapse-active > .float {
+  width: 100%;
+}
+

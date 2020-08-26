@@ -1,0 +1,8 @@
+.collapse-active {
+  transition: height .5s;
+  position: relative;
+
+  &>.float {
+    width: 100%;
+  }
+}

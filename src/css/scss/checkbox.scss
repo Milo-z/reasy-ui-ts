@@ -1,0 +1,31 @@
+.form-checkbox {
+    display: inline-block;
+    margin-right: 20px;
+    cursor: pointer;
+
+    .checkbox-item {
+        vertical-align: middle;
+        margin-right: 4px;
+        font-size: 16px;
+        color: $light-gray-color;
+
+        &.v-icon-checkbox-checked {
+            color: $main-active-color;
+        }
+
+    }
+
+    .checkbox-text {
+        display: inline-block;
+        vertical-align: middle;
+    }
+}
+
+.form-el-checkbox {
+    max-width: $elem-width;
+}
+
+.disabled>.checkbox-item {
+    background: $disabled-background-color;
+    color: $disabled-color;
+}

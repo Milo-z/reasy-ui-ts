@@ -1,0 +1,29 @@
+.form-radio {
+  display: inline-block;
+  margin-right: 20px;
+  line-height: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.form-radio .raido-item {
+  vertical-align: middle;
+  margin-right: 4px;
+  font-size: 18px;
+  color: #ccc;
+}
+
+.form-radio .raido-item.disabled {
+  background: #f2f2f2;
+  color: #d9d9d9;
+}
+
+.form-radio .raido-item.v-icon-radio-checked {
+  color: #FF8F00;
+}
+
+.form-radio .radio-text {
+  display: inline-block;
+  vertical-align: middle;
+}
+

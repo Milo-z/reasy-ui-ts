@@ -1,0 +1,66 @@
+.form-el-content {
+    position: relative;
+    display: inline-block;
+
+}
+
+.form-input {
+    width: $elem-width;
+}
+
+.text {
+    line-height: $form-line-height;
+    height: $form-line-height;
+    border: 1px solid #ddd;
+    width: 100%;
+    padding: $input-padding;
+    border-radius: 4px;
+}
+
+.text-password {
+    padding-right: 30px;
+}
+
+.placeholder-text {
+    position: absolute;
+    top: 0;
+    color: $light-gray-color;
+    padding: $input-padding;
+    line-height: $form-line-height;
+}
+
+::placeholder {
+    color: $light-gray-color;
+}
+
+.v-icon-eye-open,
+.v-icon-eye-close {
+    position: absolute;
+    width: 30px;
+    line-height: $form-line-height;
+    height: $form-line-height;
+    right: 0;
+    top: 0;
+    z-index: 10;
+    font-size: 20px;
+    text-align: center;
+    color: #000;
+    cursor: pointer;
+}
+
+.error-group {
+    position: relative;
+
+    .error-bottom {
+        position: absolute;
+        line-height: 1;
+        animation: slideInUp 0.2s ease-in;
+        margin-top: 2px;
+    }
+
+    .text {
+        border-color: $error-color !important;
+        position: relative;
+        z-index: 9;
+    }
+}

@@ -1,0 +1,52 @@
+.col-content {
+  border: 1px solid #ddd;
+}
+
+.col-content .col-group:last-child {
+  padding-right: 0;
+}
+
+.col-content.disabled {
+  background: #f2f2f2;
+  color: #d9d9d9;
+}
+
+.error-group .col-content {
+  border-color: #f00;
+}
+
+.focus.col-content {
+  border-color: #FF8F00 !important;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #FF8F00;
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #FF8F00;
+}
+
+.col-group {
+  display: inline-block;
+  position: relative;
+}
+
+.col-group .text {
+  border: none;
+  -webkit-border-radius: 0;
+          border-radius: 0;
+}
+
+.col-group .text:focus {
+  border: none !important;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.col-group .col-splitter {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 12;
+  width: 10px;
+  font-size: 20px;
+  text-align: center;
+  line-height: 32px;
+  height: 32px;
+}
+

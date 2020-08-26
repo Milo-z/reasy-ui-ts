@@ -1,0 +1,13 @@
+.form-error {
+  color: $error-color;
+  display: block;
+  text-align: left;
+}
+.form-no-title {
+  display: inline-block;
+}
+.is-error {
+  & > .text, & > .input-text, & > .col-content {
+    border-color: $error-color;
+  }
+}
