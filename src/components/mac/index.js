@@ -1,7 +1,7 @@
-import Mac from "./v-mac.vue";
+import VMac from "./v-mac.vue";
 /* istanbul ignore next */
-Mac.install = function(Vue) {
-  Vue.component(Mac.name, Mac);
+VMac.install = function (Vue) {
+  Vue.component(VMac.name, VMac);
 };
 
-export default Mac;
+export default VMac;

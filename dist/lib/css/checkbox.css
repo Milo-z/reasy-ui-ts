@@ -16,6 +16,7 @@
 }
 
 .form-checkbox .checkbox-text {
+  max-width: 93%;
   display: inline-block;
   vertical-align: middle;
 }

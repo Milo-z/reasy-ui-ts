@@ -14,7 +14,7 @@ module.exports = {
       commonjs: 'vue',
       commonjs2: 'vue',
       amd: 'vue'
-    },
+    }
     // "vue-class-component": {
     //   root: 'vue-class-component',
     //   commonjs: 'vue-class-component',
@@ -35,7 +35,7 @@ module.exports = {
     filename: '[name].js',
     //library: 'reasyUIVue',
     libraryTarget: 'commonjs2',
-    libraryExport: 'default',
+    libraryExport: 'default'
   },
   resolve: {
     alias: { // 配置目录别名
@@ -43,48 +43,41 @@ module.exports = {
       //'vue': 'vue/dist/vue.js', //解决 [Vue warn]: You are using the runtime-only build of Vue
       '@': path.resolve('src')
     },
-    extensions: ['.ts', '.js', '.vue'], // 引用js和vue文件可以省略后缀名
+    extensions: ['.ts', '.js', '.vue'] // 引用js和vue文件可以省略后缀名
 
   },
 
   module: { // 配置loader
-    rules: [
-
-      {
-        test: /\.js$/, //匹配所有.js文件
-        use: [{
-          loader: 'babel-loader'
-        }],
-        exclude: /node_modules/ //排除node_module下的所有文件
+    rules: [{
+      test: /\.js$/, //匹配所有.js文件
+      use: [{
+        loader: 'babel-loader'
+      }],
+      exclude: /node_modules/ //排除node_module下的所有文件
+    }, {
+      test: /\.ts$/,
+      loader: 'ts-loader',
+      options: {
+        appendTsSuffixTo: [/\.vue$/]
       },
-      {
-        test: /\.ts$/,
-        loader: 'ts-loader',
-        options: {
-          appendTsSuffixTo: [/\.vue$/]
+      exclude: /node_modules/ //排除node_module下的所有文件
+    }, {
+      test: /\.vue$/, //匹配所有.js文件
+      loader: 'vue-loader',
+      options: {
+        loaders: {
+          ts: 'ts-loader',
+          js: 'babel-loader',
+          //css: 'style-loader',
+          scss: 'vue-style-loader!css-loader!sass-loader?indentedSyntax'
         },
-        exclude: /node_modules/ //排除node_module下的所有文件
-      },
-      {
-        test: /\.vue$/, //匹配所有.js文件
-        loader: 'vue-loader',
-        options: {
-          loaders: {
-            ts: 'ts-loader',
-            js: 'babel-loader',
-            //css: 'style-loader',
-            scss: 'vue-style-loader!css-loader!sass-loader?indentedSyntax'
-          },
-          extractCSS: true
-        }
+        extractCSS: true
       }
-    ]
+    }]
   },
   optimization: { //webpack 4
     minimize: false
   },
   devtool: false,
-  plugins: [
-    new VueLoaderPlugin()
-  ]
+  plugins: [new VueLoaderPlugin()]
 };

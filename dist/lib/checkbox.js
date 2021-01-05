@@ -1398,7 +1398,7 @@ var v_checkboxvue_type_script_lang_ts_VCheckbox = /** @class */ (function (_supe
         Object(vue_property_decorator["d" /* Prop */])({ default: false })
     ], VCheckbox.prototype, "hasSelectAll", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["d" /* Prop */])({ default: _("全选") })
+        Object(vue_property_decorator["d" /* Prop */])({ default: "" })
     ], VCheckbox.prototype, "selectAllText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["d" /* Prop */])({ default: "" })
@@ -1485,14 +1485,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyDeepData", function() { return copyDeepData; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "formMessage", function() { return formMessage; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkData", function() { return checkData; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkSubmit", function() { return checkSubmit; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDefined", function() { return isDefined; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isObject", function() { return isObject; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hasClass", function() { return hasClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addClass", function() { return addClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeClass", function() { return removeClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "debounce", function() { return debounce; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isNotNullOrEmpty", function() { return isNotNullOrEmpty; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
 
 function isObject(obj) {
@@ -1568,14 +1566,17 @@ function removeClass(el, cls) {
  * @param {string} [value] 元素的值
  */
 function checkData(dataKey, value) {
-    var val = isDefined(value) ? value : dataKey.val || "", errMsg = "", handleValid, _this = this;
-    if (dataKey.show === false || dataKey.ignore === true || dataKey.disabled === true) {
+    var val = isDefined(value) ? value : dataKey.val, errMsg = "", handleValid;
+    if (!isDefined(val)) {
+        return true;
+    }
+    if (dataKey.show === false || dataKey.ignore || dataKey.disabled) {
         //忽略验证时
         return true;
     }
-    if (dataKey.required) {
+    if (dataKey.required !== false) {
         if (val === "" || val.length === 0) {
-            dataKey.error = _("Required");
+            dataKey.error = _("This field cannot be blank.");
             return false;
         }
     }
@@ -1593,30 +1594,30 @@ function checkData(dataKey, value) {
             return true;
         }
     }
-    if (!Array.isArray(dataKey.valid)) {
-        if (dataKey.valid) {
-            dataKey.valid = [dataKey.valid];
-        }
-        else {
-            //不存在数据验证时，直接返回
-            isDefined(dataKey.error) && (dataKey.error = "");
-            return true;
-        }
+    //未定义验证类型时
+    if (!dataKey.valid) {
+        dataKey.error = "";
+        return true;
     }
-    dataKey.valid &&
-        dataKey.valid.forEach(function (item) {
-            handleValid = (_this.$valid || {})[item.type];
-            if (handleValid && !errMsg) {
-                // edit by xc item.args可能为undefined
-                item.args = item.args || [];
-                if (typeof handleValid == "function") {
-                    errMsg = handleValid.apply(void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], item.args));
-                }
-                else if (typeof handleValid.all === "function") {
-                    errMsg = handleValid.all.apply(handleValid, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], item.args));
-                }
-            }
-        });
+    //数据验证函数
+    handleValid = this.$valid[dataKey.valid] || {};
+    //验证参数
+    var args = [];
+    if (dataKey.min != undefined) {
+        args.push(dataKey.min);
+    }
+    if (dataKey.max != undefined) {
+        args.push(dataKey.max);
+    }
+    if (dataKey.msg != undefined) {
+        args.push(dataKey.msg);
+    }
+    if (typeof handleValid == "function") {
+        errMsg = handleValid.apply(void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], args));
+    }
+    else if (typeof handleValid.all === "function") {
+        errMsg = handleValid.all.apply(handleValid, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], args));
+    }
     //数据验证
     if (errMsg) {
         dataKey.error = errMsg;
@@ -1715,22 +1716,6 @@ function sortByKey(item1, item2, fields, sortTypeObj) {
     }
     return 0;
 }
-function checkSubmit(dataObj) {
-    var errorMsg = true, checkFail = false;
-    for (var prop in dataObj) {
-        if (typeof dataObj[prop] != "object" || !isDefined(dataObj[prop].val)) {
-            continue;
-        }
-        errorMsg = checkData.call(this, dataObj[prop], true);
-        if (!errorMsg) {
-            checkFail = true;
-        }
-    }
-    if (checkFail) {
-        return false;
-    }
-    return true;
-}
 /**
  * 错误提示信息
  *
@@ -1770,9 +1755,12 @@ var FormMessage = /** @class */ (function () {
         }
         this.msg = msg;
         this.time = showTime || 2000 + msg.length * 50;
-        elem.innerHTML = this.msg;
         if (_this.success) {
             addClass(elem, "message-success");
+            elem.innerHTML = "<span class=\"form-message-icon v-icon-notice-success\"></span>" + this.msg;
+        }
+        else {
+            elem.innerHTML = "<span class=\"form-message-icon v-icon-notice-error\"></span>" + this.msg;
         }
         containerElem.appendChild(elem);
         setTimeout(function () {
@@ -1784,6 +1772,7 @@ var FormMessage = /** @class */ (function () {
             setTimeout(function () {
                 removeClass(elem, "out");
                 removeClass(elem, "message-success");
+                elem.innerHTML = "";
                 _this.elemPool.push(elem);
                 containerElem.removeChild(elem);
             }, 300);
@@ -1839,12 +1828,6 @@ function debounce(func, wait, immediate) {
         timeout = null;
     };
     return debounced;
-}
-function isNotNullOrEmpty(val) {
-    if (!!val) {
-        return true;
-    }
-    return val !== "" && val !== undefined && val !== null;
 }
 
 

@@ -1,5 +1,5 @@
 <template>
-  <transition name="pop-fade">
+<transition name="pop-fade">
     <div class="dialog-fixed" v-if="isShow">
       <div class="overlay"></div>
       <div class="dialog">
@@ -35,8 +35,8 @@ export default class VDialog extends Vue {
   @Prop({ default: true }) readonly outside!: boolean; //是否点击外部直接隐藏
   @Prop({ default: true }) readonly autoHide!: boolean; //点击确定后是否自动隐藏
   @Prop({ default: true }) readonly hasClose!: boolean; //是否有关闭按钮
-  @Prop({ default: _("确定") }) readonly okText!: string; //确认按钮文字
-  @Prop({ default: _("取消") }) readonly cancelText!: string; //取消按钮文字
+  @Prop({ default: _("OK") }) readonly okText!: string; //确认按钮文字
+  @Prop({ default: _("Cancel") }) readonly cancelText!: string; //取消按钮文字
   @Prop({ default: true }) readonly show!: boolean; //是否显示
   @Prop({ default: () => {} }) readonly beforeClose!: Function; //保存关闭前事件
   @Prop({ default: () => {} }) readonly cancelCallBack!: Function; //取消事件
@@ -52,6 +52,7 @@ export default class VDialog extends Vue {
     if (!this.outside) {
       return;
     }
+
     this.handlerCancel();
   }
 
@@ -67,3 +68,4 @@ export default class VDialog extends Vue {
   }
 }
 </script>
+

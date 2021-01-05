@@ -1144,6 +1144,14 @@ var render = function() {
             },
             [
               _c("input", {
+                directives: [
+                  {
+                    name: "manualevent",
+                    rawName: "v-manualevent",
+                    value: _vm.evtHandlerList,
+                    expression: "evtHandlerList"
+                  }
+                ],
                 ref: "input",
                 refInFor: true,
                 staticClass: "text",
@@ -1151,6 +1159,7 @@ var render = function() {
                   type: "text",
                   disabled: _vm.disabled,
                   "data-index": index,
+                  "evt-name": _vm.evtName,
                   maxlength: _vm.maxlength
                 },
                 domProps: { value: _vm.inputVal[index] },
@@ -1197,10 +1206,18 @@ render._withStripped = true
 // EXTERNAL MODULE: ./node_modules/tslib/tslib.es6.js
 var tslib_es6 = __webpack_require__(0);
 
+// EXTERNAL MODULE: ./node_modules/vue-class-component/dist/vue-class-component.esm.js
+var vue_class_component_esm = __webpack_require__(2);
+
 // EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
 var vue_property_decorator = __webpack_require__(1);
 
+// EXTERNAL MODULE: ./src/components/add-event.ts
+var add_event = __webpack_require__(6);
+
 // CONCATENATED MODULE: ./node_modules/ts-loader??ref--1!./node_modules/vue-loader/lib??vue-loader-options!./src/components/column/v-column.vue?vue&type=script&lang=ts&
+
+
 
 
 function getCursorPos(ctrl) {
@@ -1253,22 +1270,20 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
         this.$emit("changeProp", key, val);
     };
     VInputGroup.prototype.handlerKeyDown = function (event) {
-        var evtTarget = event.target, val = evtTarget.value, index = Number(evtTarget.getAttribute("data-index")), keyVal = event.char || event.key, keyCode = event.keyCode, maxIndex = this.inputList.length - 1, position;
+        var evtTarget = event.target, val = evtTarget.value, index = Number(evtTarget.getAttribute("data-index")), keyVal = event.char || event.key, keyCode = event.keyCode, maxIndex = this.inputList.length - 1, position = getCursorPos(evtTarget); //光标位置
         var inputElArr = this.input;
         if (keyCode === 8) {
             if (!this.eventKeyDown) {
                 this.eventKeyDown = true;
                 this.clickIndex = index;
             }
-            position = getCursorPos(evtTarget); //光标位置
             if (position === 0) {
-                evtTarget.value = "";
+                //evtTarget.value = "";
             }
             //this.setValue();
         }
         else if (keyCode == 39 || keyCode == 40) {
             //右 或者下
-            position = getCursorPos(evtTarget); //光标位置
             if (position === evtTarget.value.length) {
                 if (index !== maxIndex) {
                     inputElArr[index + 1].focus();
@@ -1278,7 +1293,6 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
             }
         }
         else if (keyCode == 37 || keyCode == 38) {
-            position = getCursorPos(evtTarget); //光标位置
             if (position === 0) {
                 if (index !== 0) {
                     inputElArr[index - 1].focus();
@@ -1288,9 +1302,9 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
             }
         }
         //回退
-        if (keyCode === 8 && val === "") {
+        if (keyCode === 8 && position === 0) {
             index != 0 && inputElArr[index - 1].focus();
-            event.preventDefault();
+            //event.preventDefault();
             return;
         }
         if (keyVal === this.splitter) {
@@ -1312,9 +1326,6 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
                 }
             }
             position = getCursorPos(evtTarget); //光标位置
-            if (position === 0) {
-                evtTarget.value = "";
-            }
             this.setValue();
             return;
         }
@@ -1351,7 +1362,7 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
         }
     };
     VInputGroup.prototype.onDisabledChanged = function (newValue) {
-        if (!newValue) {
+        if (newValue) {
             this.changeProp("error", "");
         }
     };
@@ -1413,7 +1424,7 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
         vue_property_decorator["a" /* Component */]
     ], VInputGroup);
     return VInputGroup;
-}(vue_property_decorator["f" /* Vue */]));
+}(Object(vue_class_component_esm["c" /* mixins */])(add_event["a" /* default */])));
 /* harmony default export */ var v_columnvue_type_script_lang_ts_ = (v_columnvue_type_script_lang_ts_VInputGroup);
 
 // CONCATENATED MODULE: ./src/components/column/v-column.vue?vue&type=script&lang=ts&
@@ -1444,6 +1455,52 @@ var component = Object(componentNormalizer["a" /* default */])(
 if (false) { var api; }
 component.options.__file = "src/components/column/v-column.vue"
 /* harmony default export */ var v_column = __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ 6:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
+/* harmony import */ var vue_property_decorator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1);
+
+
+var EventMixin = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __extends */ "b"])(EventMixin, _super);
+    function EventMixin() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.evtName = "";
+        _this.evtArr = [];
+        _this.evtHandlerList = [];
+        return _this;
+    }
+    EventMixin.prototype.created = function () {
+        this.addEvent();
+    };
+    EventMixin.prototype.addEvent = function () {
+        var evtnameArr = [], evtHandlerList = [];
+        if (typeof this.events != "function") {
+            return;
+        }
+        for (var prop in this.events()) {
+            evtnameArr.push(prop);
+            evtHandlerList.push(this.events()[prop]);
+        }
+        this.evtArr = evtnameArr;
+        this.evtHandlerList = evtHandlerList;
+        this.evtName = this.evtArr.join(";");
+    };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __decorate */ "a"])([
+        Object(vue_property_decorator__WEBPACK_IMPORTED_MODULE_1__[/* Prop */ "d"])({ default: function () { } })
+    ], EventMixin.prototype, "events", void 0);
+    EventMixin = Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __decorate */ "a"])([
+        vue_property_decorator__WEBPACK_IMPORTED_MODULE_1__[/* Component */ "a"]
+    ], EventMixin);
+    return EventMixin;
+}(vue_property_decorator__WEBPACK_IMPORTED_MODULE_1__[/* Vue */ "f"]));
+/* harmony default export */ __webpack_exports__["a"] = (EventMixin);
+
 
 /***/ })
 

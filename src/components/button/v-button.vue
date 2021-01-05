@@ -1,5 +1,5 @@
 <template>
-  <div class="button-item" v-if="show !== false">
+<div class="button-item" v-if="show !== false">
     <button
       :name="name"
       class="btn"
@@ -40,3 +40,4 @@ export default class VButton extends Vue {
   }
 }
 </script>
+

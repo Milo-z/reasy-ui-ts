@@ -1134,10 +1134,18 @@ render._withStripped = true
 // EXTERNAL MODULE: ./node_modules/tslib/tslib.es6.js
 var tslib_es6 = __webpack_require__(0);
 
+// EXTERNAL MODULE: ./node_modules/vue-class-component/dist/vue-class-component.esm.js
+var vue_class_component_esm = __webpack_require__(2);
+
 // EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
 var vue_property_decorator = __webpack_require__(1);
 
+// EXTERNAL MODULE: ./src/components/add-event.ts
+var add_event = __webpack_require__(6);
+
 // CONCATENATED MODULE: ./node_modules/ts-loader??ref--1!./node_modules/vue-loader/lib??vue-loader-options!./src/components/ip/v-ip.vue?vue&type=script&lang=ts&
+
+
 
 
 var v_ipvue_type_script_lang_ts_VIp = /** @class */ (function (_super) {
@@ -1200,7 +1208,7 @@ var v_ipvue_type_script_lang_ts_VIp = /** @class */ (function (_super) {
         vue_property_decorator["a" /* Component */]
     ], VIp);
     return VIp;
-}(vue_property_decorator["f" /* Vue */]));
+}(Object(vue_class_component_esm["c" /* mixins */])(add_event["a" /* default */])));
 /* harmony default export */ var v_ipvue_type_script_lang_ts_ = (v_ipvue_type_script_lang_ts_VIp);
 
 // CONCATENATED MODULE: ./src/components/ip/v-ip.vue?vue&type=script&lang=ts&
@@ -1231,6 +1239,52 @@ var component = Object(componentNormalizer["a" /* default */])(
 if (false) { var api; }
 component.options.__file = "src/components/ip/v-ip.vue"
 /* harmony default export */ var v_ip = __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ 6:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
+/* harmony import */ var vue_property_decorator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1);
+
+
+var EventMixin = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __extends */ "b"])(EventMixin, _super);
+    function EventMixin() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.evtName = "";
+        _this.evtArr = [];
+        _this.evtHandlerList = [];
+        return _this;
+    }
+    EventMixin.prototype.created = function () {
+        this.addEvent();
+    };
+    EventMixin.prototype.addEvent = function () {
+        var evtnameArr = [], evtHandlerList = [];
+        if (typeof this.events != "function") {
+            return;
+        }
+        for (var prop in this.events()) {
+            evtnameArr.push(prop);
+            evtHandlerList.push(this.events()[prop]);
+        }
+        this.evtArr = evtnameArr;
+        this.evtHandlerList = evtHandlerList;
+        this.evtName = this.evtArr.join(";");
+    };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __decorate */ "a"])([
+        Object(vue_property_decorator__WEBPACK_IMPORTED_MODULE_1__[/* Prop */ "d"])({ default: function () { } })
+    ], EventMixin.prototype, "events", void 0);
+    EventMixin = Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __decorate */ "a"])([
+        vue_property_decorator__WEBPACK_IMPORTED_MODULE_1__[/* Component */ "a"]
+    ], EventMixin);
+    return EventMixin;
+}(vue_property_decorator__WEBPACK_IMPORTED_MODULE_1__[/* Vue */ "f"]));
+/* harmony default export */ __webpack_exports__["a"] = (EventMixin);
+
 
 /***/ })
 

@@ -4,11 +4,14 @@
         border-top: 1px solid #e8e8e8;
     }
 }
+
 .message-content {
     .btn-group {
         border: none;
+        padding-top: 10px;
     }
 }
+
 .dialog-fixed {
     position: fixed;
     top: 0;

@@ -1,7 +1,7 @@
-import Upload from "./v-upload.vue";
+import VUpload from "./v-upload.vue";
 /* istanbul ignore next */
-Upload.install = function(Vue) {
-  Vue.component(Upload.name, Upload);
+VUpload.install = function (Vue) {
+  Vue.component(VUpload.name, VUpload);
 };
 
-export default Upload;
+export default VUpload;

@@ -6,4 +6,4 @@ export interface InstallationOptions {
   size: string;
 }
 
-export function install(vue: typeof Vue, options: InstallationOptions): void;
+export function install(vue: any): void;

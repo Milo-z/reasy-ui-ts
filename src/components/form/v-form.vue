@@ -1,5 +1,5 @@
 <template>
-  <section class="form-section" :class="css">
+<section class="form-section" :class="css">
     <slot></slot>
     <div class="form-footer">
       <v-button v-if="hasSubmit" :title="submitText" :callback="submitForm"></v-button>
@@ -7,14 +7,15 @@
     </div>
   </section>
 </template>
+
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 
 @Component
 export default class VForm extends Vue {
   @Prop({ default: "" }) readonly css!: string;
-  @Prop({ default: "保存" }) readonly submitText!: string;
-  @Prop({ default: "取消" }) readonly cancelText!: string;
+  @Prop({ default: _("Save") }) readonly submitText!: string;
+  @Prop({ default: _("Cancel") }) readonly cancelText!: string;
   @Prop({ default: false }) readonly hasCancel!: boolean;
   @Prop({ default: false }) readonly hasSubmit!: boolean;
   @Prop({ default: () => function() {} }) beforeSubmit!: Function; //返回字符串或者false时为错误，其他返回都是正确
@@ -66,7 +67,6 @@ export default class VForm extends Vue {
   submitForm() {
     //有错
     if (!this.checkValidate()) {
-      this.$message(_("请检查错误信息"));
       return false;
     }
     //表单自定义事件
@@ -95,3 +95,4 @@ export default class VForm extends Vue {
   }
 }
 </script>
+

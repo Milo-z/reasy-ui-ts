@@ -8,7 +8,8 @@
     "publish": "webpack --env.NODE_ENV=publish --color --config build/webpack.publish.js --mode production",
     "component": "webpack --env.NODE_ENV=publish --color --config build/webpack.component.js --mode production",
     "scss": "webpack --env.NODE_ENV=publish --color --config build/webpack.scss.js --mode production",
-    "build": "npm run scss && npm run component && npm run publish"
+    "move": "move.bat",
+    "build": "npm run scss && npm run component && npm run publish && npm run move"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^3.9.0",

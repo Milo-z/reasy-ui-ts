@@ -5,6 +5,7 @@
 
 .message-content .btn-group {
   border: none;
+  padding-top: 10px;
 }
 
 .dialog-fixed {

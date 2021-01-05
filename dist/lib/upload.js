@@ -1133,7 +1133,7 @@ var render = function() {
           _c("div", { staticClass: "file-btn-group" }, [
             _c("a", { staticClass: "btn icon-file-upload", class: _vm.css }, [
               _c("span", { staticClass: "file-title" }, [
-                _vm._v(_vm._s(_vm._("选择文件")))
+                _vm._v(_vm._s(_vm._("Select a file")))
               ]),
               _vm._v(" "),
               _c("input", {
@@ -1153,18 +1153,18 @@ var render = function() {
               ])
             : _vm._e(),
           _vm._v(" "),
-          _vm.fileStr == ""
+          _vm.fileStr == "" && _vm.hasTips
             ? _c("div", { staticClass: "file-tips" }, [
-                _c("span", [_vm._v("未选择任何文件")])
+                _c("span", [_vm._v(_vm._s(_vm._("No file selected")))])
               ])
             : _vm._e()
         ]),
         _vm._v(" "),
-        _vm.hasUpBtn == "true"
+        _vm.hasUpBtn
           ? _c("v-button", {
               attrs: {
                 title: _vm.btnVal,
-                css: "btn-active text-white",
+                css: "form-primary-btn",
                 callback: _vm.submit
               }
             })
@@ -1233,7 +1233,7 @@ var v_uploadvue_type_script_lang_ts_VUpload = /** @class */ (function (_super) {
     };
     VUpload.prototype.submit = function () {
         if (this.fileStr === "") {
-            this.$message("请选择文件");
+            this.$message(_("Please select a file"));
             return;
         }
         this.clickCallBack();
@@ -1249,7 +1249,7 @@ var v_uploadvue_type_script_lang_ts_VUpload = /** @class */ (function (_super) {
         Object(vue_property_decorator["d" /* Prop */])()
     ], VUpload.prototype, "uploadUrl", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["d" /* Prop */])({ default: _("上传文件") })
+        Object(vue_property_decorator["d" /* Prop */])({ default: _("Upload") })
     ], VUpload.prototype, "btnVal", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["d" /* Prop */])({ default: false })

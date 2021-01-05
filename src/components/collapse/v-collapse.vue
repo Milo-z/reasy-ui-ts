@@ -1,5 +1,5 @@
 <template>
-  <div class="v-collapse border-b form-group">
+<div class="v-collapse border-b form-group">
     <div class="v-collapse-header" :class="{ 'is-active': active }" @click="active = !active">
       {{ title }}
       <i class="v-collapse-arrow v-icon-arrrow-down" :class="{ 'is-active': active }"></i>
@@ -29,3 +29,4 @@ export default class VCollapse extends Vue {
   @Prop({ default: "" }) readonly title!: string;
 }
 </script>
+

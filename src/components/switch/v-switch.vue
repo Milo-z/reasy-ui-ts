@@ -1,5 +1,5 @@
 <template>
-  <div class="form-switch form-el-content clearfix" v-show="show">
+<div class="form-switch form-el-content clearfix" v-show="show">
     <div
       class="switch-item"
       :name="name"
@@ -45,7 +45,7 @@ export default class VSwitch extends mixins(EventMixin) {
     return this.value === this.values.on;
   }
   get tips() {
-    return this.checked ? _("开启") : _("关闭");
+    return this.checked ? _("Enable") : _("Disable");
   }
 
   get switchValue() {
@@ -68,3 +68,4 @@ export default class VSwitch extends mixins(EventMixin) {
   }
 }
 </script>
+

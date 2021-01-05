@@ -1,5 +1,5 @@
 <template>
-  <div class="uploader-container">
+<div class="uploader-container">
     <form
       ref="iform"
       class="iform"
@@ -11,7 +11,7 @@
       <div class="clearfix">
         <div class="file-btn-group">
           <a class="btn icon-file-upload" :class="css">
-            <span class="file-title">{{ _("选择文件") }}</span>
+            <span class="file-title">{{ _("Select a file") }}</span>
             <input ref="file" :name="name" type="file" class="file" @change="selectFile" />
           </a>
         </div>
@@ -19,11 +19,11 @@
           <span class="v-icon-file"></span>
           <span>{{ fileStr }}</span>
         </div>
-        <div v-if="fileStr == ''" class="file-tips">
-          <span>未选择任何文件</span>
+        <div v-if="fileStr == '' && hasTips" class="file-tips">
+          <span>{{_('No file selected')}}</span>
         </div>
       </div>
-      <v-button v-if="hasUpBtn == 'true'" :title="btnVal" css="btn-active text-white" :callback="submit"></v-button>
+      <v-button v-if="hasUpBtn" :title="btnVal" css="form-primary-btn" :callback="submit"></v-button>
       <slot></slot>
     </form>
     <iframe class="upload" ref="upload" :name="targetFile" width="1px" height="1px"></iframe>
@@ -36,7 +36,7 @@ import { Vue, Prop, Ref, Component } from "vue-property-decorator";
 @Component
 export default class VUpload extends Vue {
   @Prop() uploadUrl!: string; //上传URL
-  @Prop({ default: _("上传文件") }) btnVal!: string; //上传文件按钮显示文字
+  @Prop({ default: _("Upload") }) btnVal!: string; //上传文件按钮显示文字
   @Prop({ default: false }) hasTips!: boolean; //是否显示文件名称信息
   @Prop({ default: false }) hasUpBtn!: boolean; //是否显示上传文件按钮
   @Prop({ default: "" }) css!: string;
@@ -78,7 +78,7 @@ export default class VUpload extends Vue {
   }
   submit() {
     if (this.fileStr === "") {
-      (this as any).$message("请选择文件");
+      (this as any).$message(_("Please select a file"));
       return;
     }
     this.clickCallBack();
@@ -92,3 +92,4 @@ export default class VUpload extends Vue {
   }
 }
 </script>
+

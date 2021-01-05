@@ -1,5 +1,5 @@
 <template>
-  <div class="form-el-content" v-show="show" :class="{ 'error-group': error, [css]: true }">
+<div class="form-el-content" v-show="show" :class="{ 'error-group': error, [css]: true }">
     <template v-for="item in sortArray">
       <label
         :class="['form-radio', radioValue === item.value ? 'checked' : '']"
@@ -86,3 +86,4 @@ export default class VRadio extends mixins(EventMixin) {
   }
 }
 </script>
+

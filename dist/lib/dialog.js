@@ -1148,10 +1148,10 @@ var v_dialogvue_type_script_lang_ts_VDialog = /** @class */ (function (_super) {
         Object(vue_property_decorator["d" /* Prop */])({ default: true })
     ], VDialog.prototype, "hasClose", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["d" /* Prop */])({ default: _("确定") })
+        Object(vue_property_decorator["d" /* Prop */])({ default: _("OK") })
     ], VDialog.prototype, "okText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["d" /* Prop */])({ default: _("取消") })
+        Object(vue_property_decorator["d" /* Prop */])({ default: _("Cancel") })
     ], VDialog.prototype, "cancelText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["d" /* Prop */])({ default: true })

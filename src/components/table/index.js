@@ -1,7 +1,7 @@
-import Table from "./v-table.vue";
+import VTable from "./v-table.vue";
 /* istanbul ignore next */
-Table.install = function(Vue) {
-  Vue.component(Table.name, Table);
+VTable.install = function (Vue) {
+  Vue.component(VTable.name, VTable);
 };
 
-export default Table;
+export default VTable;

@@ -1195,8 +1195,8 @@ var render = function() {
                 {
                   name: "show",
                   rawName: "v-show",
-                  value: !_vm.isEdit,
-                  expression: "!isEdit"
+                  value: _vm.showLabel,
+                  expression: "showLabel"
                 }
               ],
               ref: "inputtext",
@@ -1227,84 +1227,12 @@ var render = function() {
         ]
       ),
       _vm._v(" "),
-      _c("transition", [
-        _c(
-          "ul",
-          {
-            directives: [
-              {
-                name: "show",
-                rawName: "v-show",
-                value: _vm.dropdownShow && !_vm.disabled && !_vm.$isMobile,
-                expression: "dropdownShow && !disabled && !$isMobile"
-              }
-            ],
-            ref: "dropdown",
-            staticClass: "select-dropdown",
-            style: { top: _vm.dropdownTop + "px" }
-          },
-          [
-            _vm._l(_vm.sortArray, function(item) {
-              return [
-                _c(
-                  "li",
-                  {
-                    key: item.value,
-                    staticClass: "select-li",
-                    class: {
-                      active: _vm.value == item.value,
-                      disabled: item.disabled
-                    },
-                    attrs: { value: item.value },
-                    on: {
-                      click: function($event) {
-                        $event.stopPropagation()
-                        return _vm.changeSelect(
-                          item.value,
-                          item.title,
-                          item.disabled
-                        )
-                      }
-                    }
-                  },
-                  [_vm._v("\n          " + _vm._s(item.title) + "\n        ")]
-                )
-              ]
-            }),
-            _vm._v(" "),
-            _c(
-              "li",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: _vm.hasManual,
-                    expression: "hasManual"
-                  }
-                ],
-                staticClass: "select-li",
-                on: {
-                  click: function($event) {
-                    $event.stopPropagation()
-                    return _vm.hanlderManual()
-                  }
-                }
-              },
-              [_vm._v(_vm._s(_vm.manualText))]
-            )
-          ],
-          2
-        )
-      ]),
-      _vm._v(" "),
       _vm.error
         ? _c("div", { staticClass: "error-bottom text-error" }, [
             _vm._v(_vm._s(_vm.msg || _vm.error))
           ])
         : _vm._e()
-    ],
-    1
+    ]
   )
 }
 var staticRenderFns = []
@@ -1338,7 +1266,7 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         _this.isEdit = false;
         _this.isInput = false; //是否正在输入
         _this.dropdownShow = false;
-        _this.dropdownTop = 0;
+        _this.showLabel = true;
         _this.lastLabel = "";
         return _this;
     }
@@ -1362,7 +1290,8 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
             }
             return this.value;
         },
-        set: function (val) { },
+        set: function (val) {
+        },
         enumerable: false,
         configurable: true
     });
@@ -1370,9 +1299,12 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         get: function () {
             var newVal = this.value;
             var varArr = this.sortArray.filter(function (item) { return item.value === newVal; });
-            //存在下拉列表
+            //存在下拉列表 
             if (varArr.length === 1) {
                 !this.isInput && (this.isEdit = false);
+                if (!this.showTitle) {
+                    return varArr[0].value;
+                }
                 return varArr[0].title;
             }
             //支持自定义时
@@ -1380,6 +1312,9 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
                 this.$nextTick(function () {
                     this.isEdit = true;
                 });
+            if (this.hasUnit) {
+                return newVal + this.unit;
+            }
             return newVal;
         },
         enumerable: false,
@@ -1399,6 +1334,7 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         this.inputValue = value;
         this.changeProp("error", "");
         this.setValue(value);
+        this.changeCallBack(value);
         this.handlerChange();
     };
     VSelect.prototype.handlerChange = function () {
@@ -1424,11 +1360,16 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         if (!this.disabled && !this.isEdit) {
             this.dropdownShow = !this.dropdownShow;
         }
+        if (!this.disabled && this.isEdit) {
+            this.showLabel = false;
+            this.input.focus();
+        }
     };
     /**
      * 失去焦点时，修改KEY值
      */
     VSelect.prototype.setKeyValue = function () {
+        this.showLabel = true;
         var val = this.input.value;
         var valArr = this.sortArray.filter(function (item) { return item.value === val; }), newVal;
         newVal = val;
@@ -1442,6 +1383,11 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
             this.isEdit = false;
         }
         this.isInput = false;
+        if (this.limitVal) {
+            if (+newVal <= 0.01) {
+                newVal = "0";
+            }
+        }
         if (newVal === this.value) {
             return;
         }
@@ -1461,7 +1407,7 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
     VSelect.prototype.handlerCallBack = function () {
         this.lastLabel = this.value;
         this.setValue(""); //选择自定义时，将值改为空
-        this.inputtext.style.display = "none";
+        this.showLabel = false;
         this.input.style.visibility = "visible";
         this.$nextTick(function () {
             this.changeProp("error", "");
@@ -1478,27 +1424,16 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         this.handlerChange();
     };
     VSelect.prototype.hide = function () {
-        this.dropdownShow = false;
+        this.dropdownShow && (this.dropdownShow = false);
     };
     VSelect.prototype.focus = function () {
         this.showOption();
     };
-    VSelect.prototype.setPosition = function () {
-        var dropdownHeight = this.dropdown.offsetHeight, inputRect = this.input.getBoundingClientRect(), bodyHeight = document.body.clientHeight;
-        if (inputRect.bottom + dropdownHeight > bodyHeight) {
-            this.dropdownTop = 0 - dropdownHeight - 8;
-        }
-        else {
-            this.dropdownTop = inputRect.height;
-        }
+    VSelect.prototype.beforeDestroy = function () {
+        this.hide();
     };
     VSelect.prototype.onDropChanged = function (newValue) {
-        if (newValue) {
-            //选中
-            this.$nextTick(function () {
-                this.setPosition();
-            });
-        }
+        this._dropdown(this, this.css);
     };
     VSelect.prototype.onShowChanged = function (newValue) {
         if (!newValue) {
@@ -1506,7 +1441,7 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         }
     };
     VSelect.prototype.onDisabledChanged = function (newValue) {
-        if (!newValue) {
+        if (newValue) {
             this.changeProp("error", "");
         }
     };
@@ -1541,10 +1476,16 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         Object(vue_property_decorator["d" /* Prop */])({ default: "" })
     ], VSelect.prototype, "name", void 0);
     Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["d" /* Prop */])({ default: "Mbps" })
+    ], VSelect.prototype, "unit", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["d" /* Prop */])({ default: false })
     ], VSelect.prototype, "hasManual", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["d" /* Prop */])({ default: _("自定义") })
+        Object(vue_property_decorator["d" /* Prop */])({ default: false })
+    ], VSelect.prototype, "hasUnit", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["d" /* Prop */])({ default: _("Custom") })
     ], VSelect.prototype, "manualText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["d" /* Prop */])({ default: "-1" })
@@ -1558,6 +1499,12 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["d" /* Prop */])({ default: false })
     ], VSelect.prototype, "isNum", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["d" /* Prop */])({ default: false })
+    ], VSelect.prototype, "limitVal", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["d" /* Prop */])({ default: true })
+    ], VSelect.prototype, "showTitle", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["d" /* Prop */])()
     ], VSelect.prototype, "type", void 0);

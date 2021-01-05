@@ -1,11 +1,14 @@
 <template>
-  <v-input-group v-bind="$props" @change="changeVal" @changeProp="changeProp"></v-input-group>
+<v-input-group v-bind="$props" @change="changeVal" @changeProp="changeProp"></v-input-group>
 </template>
+
 <script lang="ts">
-import { Vue, Prop, Ref, Component } from "vue-property-decorator";
+import { mixins } from "vue-class-component";
+import { Vue, Prop, Ref, Component, Watch } from "vue-property-decorator";
+import EventMixin from "../add-event";
 
 @Component
-export default class VIp extends Vue {
+export default class VIp extends mixins(EventMixin) {
   @Prop({ default: true }) readonly required!: boolean; //是否必填
   @Prop({ default: "" }) readonly css!: string; //样式
   @Prop({ default: true }) readonly show!: boolean; //显示
@@ -30,3 +33,4 @@ export default class VIp extends Vue {
   }
 }
 </script>
+

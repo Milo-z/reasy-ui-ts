@@ -1200,7 +1200,7 @@ var v_switchvue_type_script_lang_ts_VSwitch = /** @class */ (function (_super) {
     });
     Object.defineProperty(VSwitch.prototype, "tips", {
         get: function () {
-            return this.checked ? _("开启") : _("关闭");
+            return this.checked ? _("Enable") : _("Disable");
         },
         enumerable: false,
         configurable: true

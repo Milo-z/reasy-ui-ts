@@ -989,6 +989,10 @@ var _MessageBox = __webpack_require__(53);
 
 var _MessageBox2 = _interopRequireDefault(_MessageBox);
 
+var _Dropdown = __webpack_require__(54);
+
+var _Dropdown2 = _interopRequireDefault(_Dropdown);
+
 var _directives = __webpack_require__(31);
 
 var _directives2 = _interopRequireDefault(_directives);
@@ -1001,7 +1005,20 @@ var install = function install(Vue) {
 
   //定义数据验证
   Vue.prototype.$checkData = _libs.checkData;
-  Vue.prototype.$checkAll = _libs.checkSubmit;
+
+  var dropdownBox = void 0;
+  var DropDownBoxInstance = Vue.extend(_Dropdown2.default);
+
+  function showDropdown() {
+    var dropdownBoxEl = void 0;
+    if (!dropdownBox) {
+      dropdownBox = new DropDownBoxInstance();
+      dropdownBoxEl = dropdownBox.$mount().$el;
+      document.body.appendChild(dropdownBoxEl);
+    }
+  }
+
+  showDropdown();
 
   /**
    * 显示弹出层
@@ -1047,6 +1064,12 @@ var install = function install(Vue) {
     });
   }
 
+  Vue.prototype._dropdown = function (vm, css) {
+    showDropdown();
+    dropdownBox.css = css;
+    dropdownBox.relativeVm = vm;
+  };
+
   //提示信息
   Vue.prototype.$message = function (msg, time) {
     _libs.formMessage.success = false;
@@ -1063,25 +1086,26 @@ var install = function install(Vue) {
   Vue.prototype.$confirm = function (msgOptions) {
     return showDialog(msgOptions, true);
   };
-
-  Vue.prototype._ = function (key, replacements) {
-    var nkey = key,
-        index = void 0,
-        count = 0;
-    if (!replacements) {
-      return nkey;
-    }
-    if (replacements instanceof Array && replacements.length !== 0) {
-      while ((index = nkey.indexOf("%s")) !== -1) {
-        nkey = nkey.slice(0, index) + replacements[count] + nkey.slice(index + 2);
-        count = count + 1 === replacements.length ? count : count + 1;
+  if (typeof Vue.prototype._ !== "function") {
+    Vue.prototype._ = function (key, replacements) {
+      var nkey = key,
+          index = void 0,
+          count = 0;
+      if (!replacements) {
+        return nkey;
       }
-    } else if (typeof replacements === "string") {
-      index = nkey.indexOf("%s");
-      nkey = nkey.slice(0, index) + replacements + nkey.slice(index + 2);
-    }
-    return nkey;
-  };
+      if (replacements instanceof Array && replacements.length !== 0) {
+        while ((index = nkey.indexOf("%s")) !== -1) {
+          nkey = nkey.slice(0, index) + replacements[count] + nkey.slice(index + 2);
+          count = count + 1 === replacements.length ? count : count + 1;
+        }
+      } else if (typeof replacements === "string") {
+        index = nkey.indexOf("%s");
+        nkey = nkey.slice(0, index) + replacements + nkey.slice(index + 2);
+      }
+      return nkey;
+    };
+  }
 
   Vue.prototype.$alert = function (msgOptions) {
     return showDialog(msgOptions);
@@ -1146,8 +1170,9 @@ document.addEventListener('mousedown', function (e) {
 });
 
 document.addEventListener('mouseup', function (e) {
+  var dropdownEl = document.getElementsByClassName("-r-select-dropdown")[0];
   nodeList.forEach(function (node) {
-    if (!node.contains(e.target)) {
+    if (!node.contains(e.target) && (!dropdownEl || !dropdownEl.contains(e.target))) {
       //当点击元素不是当前node的子元素时
       node[ctx].documentHandler(e, startClick);
     }
@@ -1171,7 +1196,7 @@ var install = function install(Vue) {
   var tooltipBox = new TooltipBox(),
       msgBoxEl = tooltipBox.$mount().$el;
 
-  window.addEventListener("scroll", function () {
+  document.body.addEventListener("scroll", function () {
     tooltipBox.show = false;
   });
 
@@ -1461,14 +1486,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyDeepData", function() { return copyDeepData; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "formMessage", function() { return formMessage; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkData", function() { return checkData; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkSubmit", function() { return checkSubmit; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDefined", function() { return isDefined; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isObject", function() { return isObject; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hasClass", function() { return hasClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addClass", function() { return addClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeClass", function() { return removeClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "debounce", function() { return debounce; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isNotNullOrEmpty", function() { return isNotNullOrEmpty; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
 
 function isObject(obj) {
@@ -1544,14 +1567,17 @@ function removeClass(el, cls) {
  * @param {string} [value] 元素的值
  */
 function checkData(dataKey, value) {
-    var val = isDefined(value) ? value : dataKey.val || "", errMsg = "", handleValid, _this = this;
-    if (dataKey.show === false || dataKey.ignore === true || dataKey.disabled === true) {
+    var val = isDefined(value) ? value : dataKey.val, errMsg = "", handleValid;
+    if (!isDefined(val)) {
+        return true;
+    }
+    if (dataKey.show === false || dataKey.ignore || dataKey.disabled) {
         //忽略验证时
         return true;
     }
-    if (dataKey.required) {
+    if (dataKey.required !== false) {
         if (val === "" || val.length === 0) {
-            dataKey.error = _("Required");
+            dataKey.error = _("This field cannot be blank.");
             return false;
         }
     }
@@ -1569,30 +1595,30 @@ function checkData(dataKey, value) {
             return true;
         }
     }
-    if (!Array.isArray(dataKey.valid)) {
-        if (dataKey.valid) {
-            dataKey.valid = [dataKey.valid];
-        }
-        else {
-            //不存在数据验证时，直接返回
-            isDefined(dataKey.error) && (dataKey.error = "");
-            return true;
-        }
+    //未定义验证类型时
+    if (!dataKey.valid) {
+        dataKey.error = "";
+        return true;
     }
-    dataKey.valid &&
-        dataKey.valid.forEach(function (item) {
-            handleValid = (_this.$valid || {})[item.type];
-            if (handleValid && !errMsg) {
-                // edit by xc item.args可能为undefined
-                item.args = item.args || [];
-                if (typeof handleValid == "function") {
-                    errMsg = handleValid.apply(void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], item.args));
-                }
-                else if (typeof handleValid.all === "function") {
-                    errMsg = handleValid.all.apply(handleValid, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], item.args));
-                }
-            }
-        });
+    //数据验证函数
+    handleValid = this.$valid[dataKey.valid] || {};
+    //验证参数
+    var args = [];
+    if (dataKey.min != undefined) {
+        args.push(dataKey.min);
+    }
+    if (dataKey.max != undefined) {
+        args.push(dataKey.max);
+    }
+    if (dataKey.msg != undefined) {
+        args.push(dataKey.msg);
+    }
+    if (typeof handleValid == "function") {
+        errMsg = handleValid.apply(void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], args));
+    }
+    else if (typeof handleValid.all === "function") {
+        errMsg = handleValid.all.apply(handleValid, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], args));
+    }
     //数据验证
     if (errMsg) {
         dataKey.error = errMsg;
@@ -1691,22 +1717,6 @@ function sortByKey(item1, item2, fields, sortTypeObj) {
     }
     return 0;
 }
-function checkSubmit(dataObj) {
-    var errorMsg = true, checkFail = false;
-    for (var prop in dataObj) {
-        if (typeof dataObj[prop] != "object" || !isDefined(dataObj[prop].val)) {
-            continue;
-        }
-        errorMsg = checkData.call(this, dataObj[prop], true);
-        if (!errorMsg) {
-            checkFail = true;
-        }
-    }
-    if (checkFail) {
-        return false;
-    }
-    return true;
-}
 /**
  * 错误提示信息
  *
@@ -1746,9 +1756,12 @@ var FormMessage = /** @class */ (function () {
         }
         this.msg = msg;
         this.time = showTime || 2000 + msg.length * 50;
-        elem.innerHTML = this.msg;
         if (_this.success) {
             addClass(elem, "message-success");
+            elem.innerHTML = "<span class=\"form-message-icon v-icon-notice-success\"></span>" + this.msg;
+        }
+        else {
+            elem.innerHTML = "<span class=\"form-message-icon v-icon-notice-error\"></span>" + this.msg;
         }
         containerElem.appendChild(elem);
         setTimeout(function () {
@@ -1760,6 +1773,7 @@ var FormMessage = /** @class */ (function () {
             setTimeout(function () {
                 removeClass(elem, "out");
                 removeClass(elem, "message-success");
+                elem.innerHTML = "";
                 _this.elemPool.push(elem);
                 containerElem.removeChild(elem);
             }, 300);
@@ -1816,12 +1830,6 @@ function debounce(func, wait, immediate) {
     };
     return debounced;
 }
-function isNotNullOrEmpty(val) {
-    if (!!val) {
-        return true;
-    }
-    return val !== "" && val !== undefined && val !== null;
-}
 
 
 
@@ -1868,8 +1876,13 @@ var render = function() {
               _vm._v(" "),
               _c("div", { staticClass: "content" }, [
                 _vm.parseHtml
-                  ? _c("div", { domProps: { innerHTML: _vm._s(_vm.content) } })
-                  : _c("div", [_vm._v(_vm._s(_vm.content))])
+                  ? _c("div", {
+                      staticClass: "content-tips",
+                      domProps: { innerHTML: _vm._s(_vm.content) }
+                    })
+                  : _c("div", { staticClass: "content-tips" }, [
+                      _vm._v(_vm._s(_vm.content))
+                    ])
               ]),
               _vm._v(" "),
               _c("div", { staticClass: "btn-group" }, [
@@ -1893,7 +1906,7 @@ var render = function() {
                   },
                   [_vm._v(_vm._s(_vm.cancelText))]
                 ),
-                _vm._v("   \n          "),
+                _vm._v("   \r\n            "),
                 _c(
                   "button",
                   {
@@ -1935,8 +1948,8 @@ var MessageBoxvue_type_script_lang_ts_MessageBox = /** @class */ (function (_sup
         _this.title = "";
         _this.isShowMessageBox = false;
         _this.parseHtml = false;
-        _this.okText = ("确定");
-        _this.cancelText = ("取消");
+        _this.okText = _("OK");
+        _this.cancelText = _("Cancel");
         _this.content = "";
         _this.resolve = function () { };
         _this.reject = function () { };
@@ -1950,7 +1963,6 @@ var MessageBoxvue_type_script_lang_ts_MessageBox = /** @class */ (function (_sup
     MessageBox.prototype.cancel = function () {
         this.isShowMessageBox = false;
         if (this.hasCancel) {
-            //todo: 处理没有reject的情况
             this.reject();
         }
     };
@@ -1999,6 +2011,251 @@ var component = Object(componentNormalizer["a" /* default */])(
 if (false) { var api; }
 component.options.__file = "src/components/MessageBox.vue"
 /* harmony default export */ var components_MessageBox = __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ 54:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./src/components/Dropdown.vue?vue&type=template&id=d436187e&
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("transition", { attrs: { name: "fade" } }, [
+    _vm.show && !_vm.disabled
+      ? _c(
+          "ul",
+          {
+            ref: "dropdown",
+            staticClass: "select-dropdown -r-select-dropdown",
+            class: _vm.css,
+            style: {
+              top: _vm.dropdownTop + "px",
+              left: _vm.dropdownLeft + "px",
+              minWidth: _vm.minWidth + "px",
+              width: "auto !important"
+            }
+          },
+          [
+            _vm._l(_vm.sortArray, function(item) {
+              return [
+                _c(
+                  "li",
+                  {
+                    key: item.value,
+                    staticClass: "select-li",
+                    class: {
+                      active: _vm.value == item.value,
+                      disabled: item.disabled
+                    },
+                    attrs: { value: item.value },
+                    on: {
+                      click: function($event) {
+                        $event.stopPropagation()
+                        return _vm.changeSelect(
+                          item.value,
+                          item.title,
+                          item.disabled
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _vm._v("\n        " + _vm._s(item.title) + "\n        "),
+                    item.css ? _c("span", { class: item.css }) : _vm._e()
+                  ]
+                )
+              ]
+            }),
+            _vm._v(" "),
+            _c(
+              "li",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.hasManual,
+                    expression: "hasManual"
+                  }
+                ],
+                staticClass: "select-li",
+                on: {
+                  click: function($event) {
+                    $event.stopPropagation()
+                    return _vm.hanlderManual()
+                  }
+                }
+              },
+              [_vm._v("\n      " + _vm._s(_vm.manualText) + "\n    ")]
+            )
+          ],
+          2
+        )
+      : _vm._e()
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+// CONCATENATED MODULE: ./src/components/Dropdown.vue?vue&type=template&id=d436187e&
+
+// EXTERNAL MODULE: ./node_modules/tslib/tslib.es6.js
+var tslib_es6 = __webpack_require__(0);
+
+// EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
+var vue_property_decorator = __webpack_require__(1);
+
+// CONCATENATED MODULE: ./node_modules/ts-loader??ref--1!./node_modules/vue-loader/lib??vue-loader-options!./src/components/Dropdown.vue?vue&type=script&lang=ts&
+
+
+var Dropdownvue_type_script_lang_ts_Dropdown = /** @class */ (function (_super) {
+    Object(tslib_es6["b" /* __extends */])(Dropdown, _super);
+    function Dropdown() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.relativeVm = {}; //关联的下拉框组件
+        _this.css = "";
+        _this.dropdownLeft = 0;
+        _this.dropdownTop = 0;
+        _this.minWidth = 0;
+        return _this;
+    }
+    Object.defineProperty(Dropdown.prototype, "hasManual", {
+        get: function () {
+            return this.relativeVm.hasManual;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "show", {
+        get: function () {
+            if (this.relativeVm.dropdownShow) {
+                this.bindEvt();
+                this.$nextTick(function () {
+                    this.setPosition();
+                });
+            }
+            else {
+                this.unbindEvt();
+            }
+            return this.relativeVm.dropdownShow;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "value", {
+        get: function () {
+            return this.relativeVm.value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "manualText", {
+        get: function () {
+            return this.relativeVm.manualText;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "disabled", {
+        get: function () {
+            return this.relativeVm.disabled;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "sortArray", {
+        get: function () {
+            return this.relativeVm.sortArray;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Dropdown.prototype.hanlderManual = function () {
+        this.relativeVm.hanlderManual();
+    };
+    Dropdown.prototype.changeSelect = function () {
+        var _a;
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        (_a = this.relativeVm).changeSelect.apply(_a, args);
+    };
+    Dropdown.prototype.bindEvt = function () {
+        window.addEventListener("resize", this.setPosition);
+        window.addEventListener("scroll", this.setPosition, true);
+    };
+    Dropdown.prototype.unbindEvt = function () {
+        window.removeEventListener("resize", this.setPosition);
+        window.removeEventListener("scroll", this.setPosition, true);
+    };
+    Dropdown.prototype.setPosition = function () {
+        //不显示
+        if (!this.relativeVm.dropdownShow) {
+            return;
+        }
+        var inputRect = this.relativeVm.inputtext.getBoundingClientRect(), bodyHeight = document.body.clientHeight;
+        //当可输入时
+        if (inputRect.left === inputRect.right) {
+            inputRect = this.relativeVm.input.getBoundingClientRect();
+        }
+        this.$nextTick(function () {
+            //滚动条位置
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop, scrollLeft = (window.pageXOffset || document.documentElement.scrollLeft) +
+                document.body.scrollLeft;
+            var dropdownHeight = this.$refs.dropdown.clientHeight;
+            this.dropdownTop = inputRect.bottom + scrollTop;
+            this.dropdownLeft = inputRect.left + scrollLeft;
+            this.minWidth = inputRect.right - inputRect.left;
+            if (this.dropdownTop + dropdownHeight > bodyHeight) {
+                //超出body高度时
+                this.dropdownTop = inputRect.top - dropdownHeight - 12;
+            }
+            this.dropdownTop += document.body.scrollTop;
+        });
+    };
+    Dropdown = Object(tslib_es6["a" /* __decorate */])([
+        vue_property_decorator["a" /* Component */]
+    ], Dropdown);
+    return Dropdown;
+}(vue_property_decorator["f" /* Vue */]));
+/* harmony default export */ var Dropdownvue_type_script_lang_ts_ = (Dropdownvue_type_script_lang_ts_Dropdown);
+
+// CONCATENATED MODULE: ./src/components/Dropdown.vue?vue&type=script&lang=ts&
+ /* harmony default export */ var components_Dropdownvue_type_script_lang_ts_ = (Dropdownvue_type_script_lang_ts_); 
+// EXTERNAL MODULE: ./node_modules/vue-loader/lib/runtime/componentNormalizer.js
+var componentNormalizer = __webpack_require__(4);
+
+// CONCATENATED MODULE: ./src/components/Dropdown.vue
+
+
+
+
+
+/* normalize component */
+
+var component = Object(componentNormalizer["a" /* default */])(
+  components_Dropdownvue_type_script_lang_ts_,
+  render,
+  staticRenderFns,
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "src/components/Dropdown.vue"
+/* harmony default export */ var components_Dropdown = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
 

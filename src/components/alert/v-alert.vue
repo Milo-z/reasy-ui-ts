@@ -1,5 +1,5 @@
 <template>
-  <transition name="fade">
+<transition name="fade">
     <v-dialog @hide="hide" v-bind="$props">
       <slot></slot>
     </v-dialog>
@@ -7,7 +7,6 @@
 </template>
 
 <script lang="ts">
-
 // import Component from 'vue-class-component';
 import { Vue, Component, Prop} from "vue-property-decorator";
 
@@ -29,3 +28,4 @@ export default class VAlert extends Vue {
   }
 }
 </script>
+

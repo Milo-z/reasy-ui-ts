@@ -1,5 +1,5 @@
 <template>
-  <div>
+<div>
     <transition name="fade">
       <div class="mask" v-show="visible" @click="visible = false"></div>
     </transition>
@@ -33,14 +33,13 @@
 </template>
 
 <script lang="ts">
-
 import BScroll from "better-scroll";
 import { copyDeepData } from "../libs";
 import { Vue, Prop, Component, Watch, Model, Inject } from "vue-property-decorator";
 
 // 级联
 const TEXT_TITLE = "";
-const TEXT_CONFIRM = _("Confirm");
+const TEXT_CONFIRM = _("OK");
 const TEXT_CANCEL = _("Cancel");
 
 const COLOR_TITLE = "#262626";
@@ -183,3 +182,4 @@ export default class VPicker extends Vue {
   }
 }
 </script>
+

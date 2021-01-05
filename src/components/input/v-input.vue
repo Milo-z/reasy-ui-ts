@@ -1,5 +1,5 @@
 <template>
-  <div
+<div
     class="form-el-content form-input"
     :class="{ 'error-group': error, [css]: true }"
     v-show="show"
@@ -19,7 +19,7 @@
       :evt-name="evtName"
       ref="input"
     />
-    <div @click="focus()" class="placeholder-text" v-if="!supportPlaceholder && !val">
+    <div @click="focus()" class="placeholder-text" v-if="!supportPlaceholder && !inputValue">
       {{ placeholder }}
     </div>
     <div
@@ -106,7 +106,7 @@ export default class VInput extends mixins(EventMixin) {
 
   @Watch("disabled")
   onDisabledChanged(newValue: boolean) {
-    if (!newValue) {
+    if (newValue) {
       this.$emit("changeProp", "error", "");
     }
   }
@@ -115,3 +115,4 @@ export default class VInput extends mixins(EventMixin) {
   }
 }
 </script>
+

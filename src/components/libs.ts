@@ -74,20 +74,22 @@ function removeClass(el: Element, cls: string): void {
  * @param {object} dataKey 元素对象
  * @param {string} [value] 元素的值
  */
-function checkData(this: Vue, dataKey: ObjectAny, value: any): boolean {
-  let val = isDefined(value) ? value : dataKey.val || "",
+function checkData(this: Vue, dataKey: ObjectAny, value?: any): boolean {
+  let val = isDefined(value) ? value : dataKey.val,
     errMsg = "",
-    handleValid,
-    _this = this;
+    handleValid;
 
-  if (dataKey.show === false || dataKey.ignore === true || dataKey.disabled === true) {
+  if(!isDefined(val)) {
+    return true;
+  }
+  if (dataKey.show === false || dataKey.ignore || dataKey.disabled) {
     //忽略验证时
     return true;
   }
 
-  if (dataKey.required) {
+  if (dataKey.required !== false) {
     if (val === "" || val.length === 0) {
-      dataKey.error = _("Required");
+      dataKey.error = _("This field cannot be blank.");
       return false;
     }
   } else {
@@ -104,30 +106,31 @@ function checkData(this: Vue, dataKey: ObjectAny, value: any): boolean {
       return true;
     }
   }
-
-  if (!Array.isArray(dataKey.valid)) {
-    if (dataKey.valid) {
-      dataKey.valid = [dataKey.valid];
-    } else {
-      //不存在数据验证时，直接返回
-      isDefined(dataKey.error) && (dataKey.error = "");
-      return true;
-    }
+  //未定义验证类型时
+  if (!dataKey.valid) {
+    dataKey.error = "";
+    return true;
   }
 
-  dataKey.valid &&
-    dataKey.valid.forEach(function(item: Valid) {
-      handleValid = (_this.$valid || {})[item.type];
-      if (handleValid && !errMsg) {
-        // edit by xc item.args可能为undefined
-        item.args = item.args || [];
-        if (typeof handleValid == "function") {
-          errMsg = handleValid(val, ...item.args);
-        } else if (typeof handleValid.all === "function") {
-          errMsg = handleValid.all(val, ...item.args);
-        }
-      }
-    });
+  //数据验证函数
+  handleValid = this.$valid[dataKey.valid] || {};
+  //验证参数
+  let args = [];
+  if (dataKey.min != undefined) {
+    args.push(dataKey.min);
+  }
+  if (dataKey.max != undefined) {
+    args.push(dataKey.max);
+  }
+  if (dataKey.msg != undefined) {
+    args.push(dataKey.msg);
+  }
+
+  if (typeof handleValid == "function") {
+    errMsg = handleValid(val, ...args);
+  } else if (typeof handleValid.all === "function") {
+    errMsg = handleValid.all(val, ...args);
+  }
 
   //数据验证
   if (errMsg) {
@@ -138,6 +141,7 @@ function checkData(this: Vue, dataKey: ObjectAny, value: any): boolean {
   dataKey.error = "";
   return true;
 }
+
 if (typeof window._ !== "function") {
   window._ = function(key: string, replacements: any) {
     let nkey = key,
@@ -236,25 +240,6 @@ function sortByKey(item1: ObjectAny, item2: ObjectAny, fields: Array<string>, so
   return 0;
 }
 
-function checkSubmit(this: Vue, dataObj: ObjectAny) {
-  let errorMsg = true,
-    checkFail = false;
-  for (let prop in dataObj) {
-    if (typeof dataObj[prop] != "object" || !isDefined(dataObj[prop].val)) {
-      continue;
-    }
-    errorMsg = checkData.call(this, dataObj[prop], true);
-    if (!errorMsg) {
-      checkFail = true;
-    }
-  }
-
-  if (checkFail) {
-    return false;
-  }
-  return true;
-}
-
 /**
  * 错误提示信息
  *
@@ -313,9 +298,11 @@ class FormMessage {
     this.msg = msg;
     this.time = showTime || 2000 + msg.length * 50;
 
-    elem.innerHTML = this.msg;
     if (_this.success) {
       addClass(elem, "message-success");
+      elem.innerHTML = `<span class="form-message-icon v-icon-notice-success"></span>${this.msg}`;
+    } else {
+      elem.innerHTML = `<span class="form-message-icon v-icon-notice-error"></span>${this.msg}`;
     }
     containerElem.appendChild(elem);
     setTimeout(function() {
@@ -327,6 +314,7 @@ class FormMessage {
       setTimeout(function() {
         removeClass(elem, "out");
         removeClass(elem, "message-success");
+        elem.innerHTML = "";
         _this.elemPool.push(elem);
         containerElem.removeChild(elem);
       }, 300);
@@ -378,26 +366,16 @@ function debounce(func: Function, wait: number, immediate = true) {
   return debounced;
 }
 
-function isNotNullOrEmpty(val: any): boolean {
-  if (!!val) {
-    return true;
-  }
-
-  return val !== "" && val !== undefined && val !== null;
-}
-
 export {
   //setOptions,
   sortByKey,
   copyDeepData,
   formMessage,
   checkData,
-  checkSubmit,
   isDefined,
   isObject,
   hasClass,
   addClass,
   removeClass,
-  debounce,
-  isNotNullOrEmpty
+  debounce
 };

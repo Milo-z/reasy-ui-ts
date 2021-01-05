@@ -48,6 +48,7 @@
 
     .text-tips {
       overflow: hidden;
+      word-break: break-all;
     }
 
     &.active {
@@ -59,30 +60,29 @@
       background: $disabled-background-color;
     }
   }
+}
 
-  .select-dropdown {
-    position: absolute;
-    min-width: 100%;
-    list-style: none;
-    border: solid 1px #e4e7ed;
-    border-radius: 4px;
-    background-color: #fff;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    box-sizing: border-box;
-    margin: 5px 0;
-    text-align: left;
-    z-index: 99;
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 16px 0;
-    .select-li {
-      padding: 0 16px;
-      line-height: $form-line-height;
-      white-space: nowrap;
+.select-dropdown {
+  position: absolute;
+  list-style: none;
+  border: solid 1px #e4e7ed;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  margin: 5px 0;
+  text-align: left;
+  z-index: 99;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 16px 0;
+  .select-li {
+    padding: 0 16px;
+    line-height: $form-line-height;
+    white-space: nowrap;
 
-      &:hover {
-        background: #ddd;
-      }
+    &:hover {
+      background: #ddd;
     }
   }
 }

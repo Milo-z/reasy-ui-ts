@@ -1,5 +1,5 @@
 <template>
-  <div class="form-el-content" v-show="show">
+<div class="form-el-content" v-show="show">
     <div class="form-slider" :class="css">
       <div class="slider-content" :style="{ width: width + 'px' }">
         <div class="slider-percent" :style="{ width: left + 'px' }"></div>
@@ -10,10 +10,11 @@
         @mousedown.stop="mouseStart"
         :style="{ left: left + 'px' }"
       ></div>
-      <div class="slider-number">{{ vText }}</div>
+      <div class="slider-number">{{ vText }}%</div>
     </div>
   </div>
 </template>
+
 <script lang="ts">
 import { Vue, Prop, Component } from "vue-property-decorator";
 
@@ -93,3 +94,4 @@ export default class VSlider extends Vue {
   }
 }
 </script>
+

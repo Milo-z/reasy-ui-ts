@@ -1,5 +1,5 @@
 <template>
-  <div class="progress-content" :class="css" v-if="isShow">
+<div class="progress-content" :class="css" v-if="isShow">
     <div class="h2-title">
       <slot name="header"></slot>
     </div>
@@ -12,6 +12,7 @@
     <slot></slot>
   </div>
 </template>
+
 <script lang="ts">
 import { Vue, Prop, Component, Watch } from "vue-property-decorator";
 
@@ -22,6 +23,7 @@ export default class VProgress extends Vue {
   @Prop({ default: "" }) readonly css!: string;
   @Prop({ default: "" }) readonly barCss!: string;
   @Prop({ default: "center" }) readonly textAlign!: string;
+  @Prop({ default: true }) readonly isAuto!: boolean; //是否需要自动加进度条
   @Prop() readonly intervalTime!: number; //间隔时间
   //@Prop({ default: () => {} }) readonly callback!: Function; //进度条完成时的事件
 
@@ -54,7 +56,7 @@ export default class VProgress extends Vue {
       this.isShow = true;
       this.$nextTick(function() {
         this.percenter = this.percent || 0;
-        this.update();
+        this.isAuto && this.update();
       });
     } else {
       this.percenter = this.max;
@@ -67,9 +69,15 @@ export default class VProgress extends Vue {
   onPercentChanged(val: number) {
     this.$emit("change", val);
   }
-
+  @Watch("percent")
+  onManualChanged(val: number) {
+    if (!this.isAuto) {
+      this.percenter = this.percent;
+    }
+  }
   destroyed() {
     clearTimeout(this.progressTimer);
   }
 }
 </script>
+

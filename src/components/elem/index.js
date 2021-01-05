@@ -1,7 +1,7 @@
-import Page from "./v-elem.vue";
+import VElem from "./v-elem.vue";
 /* istanbul ignore next */
-Page.install = function(Vue) {
-  Vue.component(Page.name, Page);
+VElem.install = function (Vue) {
+  Vue.component(VElem.name, VElem);
 };
 
-export default Page;
+export default VElem;

@@ -15,58 +15,46 @@ module.exports = {
       'vue': 'vue/dist/vue.js', //解决 [Vue warn]: You are using the runtime-only build of Vue
       '@': path.resolve('src')
     },
-    extensions: ['.js', '.vue'], // 引用js和vue文件可以省略后缀名
+    extensions: ['.js', '.vue'] // 引用js和vue文件可以省略后缀名
   },
 
   module: { // 配置loader
     rules: [{ //npm config set sass_binary_site https://npm.taobao.org/mirrors/node-sass/
-        test: /\.(scss|css)$/,
-        use: [
-          //"vue-style-loader",
-          MiniCssExtractPlugin.loader,
-          "css-loader",
-          'postcss-loader',
-          {
-            loader: 'sass-loader',
-            options: {
-              outputStyle: 'expanded'
-            }
-          },
-
-          {
-            loader: 'sass-resources-loader',
-            options: {
-              // Provide path to the file with resources
-              resources: './src/css/vars.scss',
-            },
-          }
-        ],
-        exclude: /node_modules/
-      },
-      {
-        test: /\.(woff|woff2|eot|ttf|svg)$/,
-        loader: 'url-loader',
+      test: /\.(scss|css)$/,
+      use: [
+      //"vue-style-loader",
+      MiniCssExtractPlugin.loader, "css-loader", 'postcss-loader', {
+        loader: 'sass-loader',
         options: {
-          publicPath: "../../fonts/",
-          outputPath: "../fonts/",
-          name: 'v-[name].[ext]?[hash:7]'
+          outputStyle: 'expanded'
         }
-      },
-    ]
+      }, {
+        loader: 'sass-resources-loader',
+        options: {
+          // Provide path to the file with resources
+          resources: './src/css/vars.scss'
+        }
+      }],
+      exclude: /node_modules/
+    }, {
+      test: /\.(woff|woff2|eot|ttf|svg)$/,
+      loader: 'url-loader',
+      options: {
+        publicPath: "../../fonts/",
+        outputPath: "../fonts/",
+        name: 'v-[name].[ext]?[hash:7]'
+      }
+    }]
 
   },
   optimization: { //webpack 4
     minimize: false
   },
   devtool: false,
-  plugins: [
-    new CleanWebpackPlugin(["dist"], {
-      root: path.join(__dirname, "../")
-    }),
-    new MiniCssExtractPlugin({
-      filename: 'css/[name].css',
-      chunkFilename: '[id].css'
-    })
-
-  ]
+  plugins: [new CleanWebpackPlugin(["dist"], {
+    root: path.join(__dirname, "../")
+  }), new MiniCssExtractPlugin({
+    filename: 'css/[name].css',
+    chunkFilename: '[id].css'
+  })]
 };

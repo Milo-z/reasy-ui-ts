@@ -1,13 +1,9 @@
-import Progress from "./v-progress.vue";
+import VProgress from "./v-progress.vue";
 //import UpProgress from "./v-upgrade-progress.vue";
 /* istanbul ignore next */
-Progress.install = function(Vue) {
-  Vue.component(Progress.name, Progress);
+VProgress.install = function (Vue) {
+  Vue.component(VProgress.name, VProgress);
   //Vue.component(UpProgress.name, UpProgress);
 };
 
-export {
-  Progress,
-  //UpProgress
-};
-
+export { VProgress };

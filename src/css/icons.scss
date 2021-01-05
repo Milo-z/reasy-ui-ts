@@ -40,18 +40,6 @@
 .v-icon-close:before {
   content: "\e906";
 }
-.v-icon-file:before {
-  content: "\e91f";
-}
-.v-icon-arrrow-up:before {
-  content: "\e921";
-}
-.v-icon-radio-checked:before {
-  content: "\ea55";
-}
-.v-icon-radio-unchecked:before {
-  content: "\ea56";
-}
 .v-icon-eye-close:before {
   content: "\e909";
 }
@@ -60,4 +48,22 @@
 }
 .v-icon-arrrow-down:before {
   content: "\e917";
+}
+.v-icon-file:before {
+  content: "\e91f";
+}
+.v-icon-arrrow-up:before {
+  content: "\e921";
+}
+.v-icon-notice-success:before {
+  content: "\e944";
+}
+.v-icon-radio-checked:before {
+  content: "\ea55";
+}
+.v-icon-radio-unchecked:before {
+  content: "\ea56";
+}
+.v-icon-notice-error:before {
+  content: "\e945";
 }

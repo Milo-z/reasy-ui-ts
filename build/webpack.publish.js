@@ -9,7 +9,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   externals: {
-    vue: 'vue',
+    vue: 'vue'
     // vue: {
     //   root: 'Vue',
     //   commonjs: 'vue',
@@ -42,103 +42,88 @@ module.exports = {
       // 'vue$': 'vue/dist/vue.esm.js',
       '@': path.resolve('src')
     },
-    extensions: ['.ts', '.js', '.vue'], // 引用js和vue文件可以省略后缀名
+    extensions: ['.ts', '.js', '.vue'] // 引用js和vue文件可以省略后缀名
 
   },
 
   module: { // 配置loader
     rules: [{ //npm config set sass_binary_site https://npm.taobao.org/mirrors/node-sass/
-        test: /\.(scss|css)$/,
-        use: [
-          //"vue-style-loader",
-          MiniCssExtractPlugin.loader,
-          "css-loader",
-          /*  {
-					 loader: 'css-loader',
-					 options: {
-					     modules: true,
-					   importLoaders: 1
-					 }
-				   }, */
-          'postcss-loader',
-          {
-            loader: 'sass-loader',
-            options: {
-              outputStyle: 'expanded'
-            }
-          },
-          {
-            loader: 'sass-resources-loader',
-            options: {
-              // Provide path to the file with resources
-              resources: './src/css/vars.scss',
-            },
-          }
-        ],
-        exclude: /node_modules/
-      },
-
-      {
-        test: /\.(png|jpe?g|gif)(\?.*)?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 1000,
-          publicPath: "/img/",
-          outputPath: "/img/",
-          name: '[name].[ext]?[hash:7]'
-        }
-      },
-      {
-        test: /\.(woff|woff2|eot|ttf|svg)$/,
-        loader: 'url-loader',
-        options: {
-          publicPath: "/fonts/",
-          outputPath: "/fonts/",
-          name: 'v-[name].[ext]?[hash:7]'
-        }
-      },
-
-      {
-        test: /\.js$/, //匹配所有.js文件
-        use: [{
-          loader: 'babel-loader'
-        }],
-        exclude: /node_modules/ //排除node_module下的所有文件
-      },
-      {
-        test: /\.ts$/,
-        loader: 'ts-loader',
-        options: {
-          appendTsSuffixTo: [/\.vue$/]
-        },
-        exclude: /node_modules/ //排除node_module下的所有文件
-      },
-      {
-        test: /\.vue$/, //匹配所有.js文件
-
-        loader: 'vue-loader',
-        options: {
-          loaders: {
-            ts: 'ts-loader',
-            js: 'babel-loader',
-            //css: 'style-loader',
-            scss: 'vue-style-loader!css-loader!sass-loader?indentedSyntax'
-          },
-          extractCSS: true
-        }
+      test: /\.(scss|css)$/,
+      use: [
+      //"vue-style-loader",
+      MiniCssExtractPlugin.loader, "css-loader",
+      /*  {
+      loader: 'css-loader',
+      options: {
+      modules: true,
+      importLoaders: 1
       }
-    ]
+      }, */
+      'postcss-loader', {
+        loader: 'sass-loader',
+        options: {
+          outputStyle: 'expanded'
+        }
+      }, {
+        loader: 'sass-resources-loader',
+        options: {
+          // Provide path to the file with resources
+          resources: './src/css/vars.scss'
+        }
+      }],
+      exclude: /node_modules/
+    }, {
+      test: /\.(png|jpe?g|gif)(\?.*)?$/,
+      loader: 'url-loader',
+      options: {
+        limit: 1000,
+        publicPath: "/img/",
+        outputPath: "/img/",
+        name: '[name].[ext]?[hash:7]'
+      }
+    }, {
+      test: /\.(woff|woff2|eot|ttf|svg)$/,
+      loader: 'url-loader',
+      options: {
+        publicPath: "/fonts/",
+        outputPath: "/fonts/",
+        name: 'v-[name].[ext]?[hash:7]'
+      }
+    }, {
+      test: /\.js$/, //匹配所有.js文件
+      use: [{
+        loader: 'babel-loader'
+      }],
+      exclude: /node_modules/ //排除node_module下的所有文件
+    }, {
+      test: /\.ts$/,
+      loader: 'ts-loader',
+      options: {
+        appendTsSuffixTo: [/\.vue$/]
+      },
+      exclude: /node_modules/ //排除node_module下的所有文件
+    }, {
+      test: /\.vue$/, //匹配所有.js文件
+
+      loader: 'vue-loader',
+      options: {
+        loaders: {
+          ts: 'ts-loader',
+          js: 'babel-loader',
+          //css: 'style-loader',
+          scss: 'vue-style-loader!css-loader!sass-loader?indentedSyntax'
+        },
+        extractCSS: true
+      }
+    }]
 
   },
   optimization: { //webpack 4
     minimize: false
   },
   devtool: false,
-  plugins: [
-    new MiniCssExtractPlugin({
-      filename: 'styles.css?[contenthash:5]',
-      chunkFilename: '[id].css'
-    }),
-    new VueLoaderPlugin()
-  ]
+  plugins: [new MiniCssExtractPlugin({
+    filename: 'styles.css?[contenthash:5]',
+    chunkFilename: '[id].css'
+  }), new VueLoaderPlugin()]
 };

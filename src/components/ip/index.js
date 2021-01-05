@@ -1,7 +1,7 @@
-import Ip from "./v-ip.vue";
+import VIp from "./v-ip.vue";
 /* istanbul ignore next */
-Ip.install = function(Vue) {
-  Vue.component(Ip.name, Ip);
+VIp.install = function (Vue) {
+  Vue.component(VIp.name, VIp);
 };
 
-export default Ip;
+export default VIp;

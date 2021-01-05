@@ -1279,7 +1279,7 @@ var render = function() {
             }
           }),
       _vm._v(" "),
-      !_vm.supportPlaceholder && !_vm.val
+      !_vm.supportPlaceholder && !_vm.inputValue
         ? _c(
             "div",
             {
@@ -1290,7 +1290,7 @@ var render = function() {
                 }
               }
             },
-            [_vm._v("\n    " + _vm._s(_vm.placeholder) + "\n  ")]
+            [_vm._v("\r\n      " + _vm._s(_vm.placeholder) + "\r\n    ")]
           )
         : _vm._e(),
       _vm._v(" "),
@@ -1308,7 +1308,7 @@ var render = function() {
       _vm._v(" "),
       _vm.error
         ? _c("div", { staticClass: "error-bottom text-error" }, [
-            _vm._v("\n    " + _vm._s(_vm.msg || _vm.error) + "\n  ")
+            _vm._v("\r\n      " + _vm._s(_vm.msg || _vm.error) + "\r\n    ")
           ])
         : _vm._e()
     ]
@@ -1386,7 +1386,7 @@ var v_inputvue_type_script_lang_ts_VInput = /** @class */ (function (_super) {
         }
     };
     VInput.prototype.onDisabledChanged = function (newValue) {
-        if (!newValue) {
+        if (newValue) {
             this.$emit("changeProp", "error", "");
         }
     };

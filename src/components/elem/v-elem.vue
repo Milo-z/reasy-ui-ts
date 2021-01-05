@@ -1,5 +1,5 @@
 <template>
-  <transition
+<transition
     @before-enter="beforeEnter"
     @enter="enter"
     @after-enter="afterEnter"
@@ -64,3 +64,4 @@ export default class VElem extends Vue {
   }
 }
 </script>
+

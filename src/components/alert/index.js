@@ -1,8 +1,8 @@
-import Alert from './v-alert';
+import VAlert from './v-alert';
 
 /* istanbul ignore next */
-Alert.install = function(Vue) {
-  Vue.component(Alert.name, Alert);
+VAlert.install = function (Vue) {
+  Vue.component(VAlert.name, VAlert);
 };
 
-export default Alert;
+export default VAlert;

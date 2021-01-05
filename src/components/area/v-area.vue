@@ -1,11 +1,10 @@
 <template>
-  <div ref="elem" v-show="show !== false">
+<div ref="elem" v-show="show !== false">
     <slot></slot>
   </div>
 </template>
 
 <script lang="ts">
-
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 
 @Component
@@ -32,3 +31,4 @@ export default class VArea extends Vue {
   }
 }
 </script>
+

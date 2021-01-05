@@ -647,7 +647,7 @@ function isPromise(obj) {
 
 
 exports.__esModule = true;
-exports.Progress = undefined;
+exports.VProgress = undefined;
 
 var _vProgress = __webpack_require__(45);
 
@@ -662,7 +662,7 @@ _vProgress2.default.install = function (Vue) {
   //Vue.component(UpProgress.name, UpProgress);
 };
 
-exports.Progress = _vProgress2.default;
+exports.VProgress = _vProgress2.default;
 
 /***/ }),
 
@@ -1196,7 +1196,7 @@ var v_progressvue_type_script_lang_ts_VProgress = /** @class */ (function (_supe
             this.isShow = true;
             this.$nextTick(function () {
                 this.percenter = this.percent || 0;
-                this.update();
+                this.isAuto && this.update();
             });
         }
         else {
@@ -1207,6 +1207,11 @@ var v_progressvue_type_script_lang_ts_VProgress = /** @class */ (function (_supe
     };
     VProgress.prototype.onPercentChanged = function (val) {
         this.$emit("change", val);
+    };
+    VProgress.prototype.onManualChanged = function (val) {
+        if (!this.isAuto) {
+            this.percenter = this.percent;
+        }
     };
     VProgress.prototype.destroyed = function () {
         clearTimeout(this.progressTimer);
@@ -1227,6 +1232,9 @@ var v_progressvue_type_script_lang_ts_VProgress = /** @class */ (function (_supe
         Object(vue_property_decorator["d" /* Prop */])({ default: "center" })
     ], VProgress.prototype, "textAlign", void 0);
     Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["d" /* Prop */])({ default: true })
+    ], VProgress.prototype, "isAuto", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["d" /* Prop */])()
     ], VProgress.prototype, "intervalTime", void 0);
     Object(tslib_es6["a" /* __decorate */])([
@@ -1235,6 +1243,9 @@ var v_progressvue_type_script_lang_ts_VProgress = /** @class */ (function (_supe
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["g" /* Watch */])("percenter")
     ], VProgress.prototype, "onPercentChanged", null);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["g" /* Watch */])("percent")
+    ], VProgress.prototype, "onManualChanged", null);
     VProgress = Object(tslib_es6["a" /* __decorate */])([
         vue_property_decorator["a" /* Component */]
     ], VProgress);

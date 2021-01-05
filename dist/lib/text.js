@@ -1116,7 +1116,7 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "form-text-content", class: _vm.css }, [
-    _vm._v("\n  " + _vm._s(_vm.value) + "\n")
+    _vm._v("\r\n      " + _vm._s(_vm.value) + "\r\n    ")
   ])
 }
 var staticRenderFns = []

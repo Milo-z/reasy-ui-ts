@@ -1,8 +1,9 @@
 <template>
-  <component :is="vname" v-model="value" @change="changeVal" @changeProp="changeProp" v-bind="dataKey">
+<component :is="vname" v-model="value" @change="changeVal" @changeProp="changeProp" v-bind="dataKey">
     <slot></slot>
   </component>
 </template>
+
 <script lang="ts">
 //暂时未用到！！！
 import { Vue, Prop, Component, Model } from "vue-property-decorator";
@@ -25,3 +26,4 @@ export default class VItem extends Vue {
   }
 }
 </script>
+

@@ -1,7 +1,7 @@
-import Dialog from "./v-dialog.vue";
+import VDialog from "./v-dialog.vue";
 /* istanbul ignore next */
-Dialog.install = function(Vue) {
-  Vue.component(Dialog.name, Dialog);
+VDialog.install = function (Vue) {
+  Vue.component(VDialog.name, VDialog);
 };
 
-export default Dialog;
+export default VDialog;

@@ -1,10 +1,7 @@
-import {
-  formMessage,
-  checkData,
-  checkSubmit
-} from "./libs.ts";
+import { formMessage, checkData } from "./libs.ts";
 
 import msgboxVue from "./MessageBox.vue";
+import dropdown from "./Dropdown.vue";
 
 import Derectives from "../directives";
 
@@ -14,7 +11,20 @@ const install = function (Vue) {
 
   //定义数据验证
   Vue.prototype.$checkData = checkData;
-  Vue.prototype.$checkAll = checkSubmit;
+
+  let dropdownBox;
+  const DropDownBoxInstance = Vue.extend(dropdown);
+
+  function showDropdown() {
+    let dropdownBoxEl;
+    if (!dropdownBox) {
+      dropdownBox = new DropDownBoxInstance();
+      dropdownBoxEl = dropdownBox.$mount().$el;
+      document.body.appendChild(dropdownBoxEl);
+    }
+  }
+
+  showDropdown();
 
   /**
    * 显示弹出层
@@ -50,17 +60,20 @@ const install = function (Vue) {
 
     currentMsg.hasCancel = !!hasCancel;
 
-    return currentMsg
-      .showMsgBox()
-      .then((val) => {
-        currentMsg = null;
-        return Promise.resolve(val);
-      })
-      .catch((err) => {
-        currentMsg = null;
-        return Promise.reject(err);
-      });
+    return currentMsg.showMsgBox().then(val => {
+      currentMsg = null;
+      return Promise.resolve(val);
+    }).catch(err => {
+      currentMsg = null;
+      return Promise.reject(err);
+    });
   }
+
+  Vue.prototype._dropdown = function (vm, css) {
+    showDropdown();
+    dropdownBox.css = css;
+    dropdownBox.relativeVm = vm;
+  };
 
   //提示信息
   Vue.prototype.$message = function (msg, time) {
@@ -78,33 +91,32 @@ const install = function (Vue) {
   Vue.prototype.$confirm = function (msgOptions) {
     return showDialog(msgOptions, true);
   };
-
-  Vue.prototype._ = function (key, replacements) {
-    let nkey = key,
-      index,
-      count = 0;
-    if (!replacements) {
-      return nkey;
-    }
-    if (replacements instanceof Array && replacements.length !== 0) {
-      while ((index = nkey.indexOf("%s")) !== -1) {
-        nkey = nkey.slice(0, index) + replacements[count] + nkey.slice(index + 2);
-        count = count + 1 === replacements.length ? count : count + 1;
+  if (typeof Vue.prototype._ !== "function") {
+    Vue.prototype._ = function (key, replacements) {
+      let nkey = key,
+          index,
+          count = 0;
+      if (!replacements) {
+        return nkey;
       }
-    } else if (typeof replacements === "string") {
-      index = nkey.indexOf("%s");
-      nkey = nkey.slice(0, index) + replacements + nkey.slice(index + 2);
-    }
-    return nkey;
-  };
+      if (replacements instanceof Array && replacements.length !== 0) {
+        while ((index = nkey.indexOf("%s")) !== -1) {
+          nkey = nkey.slice(0, index) + replacements[count] + nkey.slice(index + 2);
+          count = count + 1 === replacements.length ? count : count + 1;
+        }
+      } else if (typeof replacements === "string") {
+        index = nkey.indexOf("%s");
+        nkey = nkey.slice(0, index) + replacements + nkey.slice(index + 2);
+      }
+      return nkey;
+    };
+  }
 
   Vue.prototype.$alert = function (msgOptions) {
     return showDialog(msgOptions);
   };
 
-  Vue.prototype.$isMobile =
-    /Android|webOS|iPhone|iPod|iPad|BlackBerry/gi.test(navigator.userAgent) &&
-    document.documentElement.clientWidth <= 768;
+  Vue.prototype.$isMobile = /Android|webOS|iPhone|iPod|iPad|BlackBerry/gi.test(navigator.userAgent) && document.documentElement.clientWidth <= 768;
 
   //触发表单的广播事件
   Vue.prototype.$dispatch = function (componentName, name, ...arsg) {
@@ -116,8 +128,8 @@ const install = function (Vue) {
     }
   };
 
-  Vue.prototype.$getLabelWidth = function() {
-    if(this.$options.name === 'VPage' || this === this.$root) {
+  Vue.prototype.$getLabelWidth = function () {
+    if (this.$options.name === 'VPage' || this === this.$root) {
       return this.labelWidth || 'auto';
     }
     return this.$parent.$getLabelWidth();

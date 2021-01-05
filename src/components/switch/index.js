@@ -1,7 +1,7 @@
-import Switch from "./v-switch.vue";
+import VSwitch from "./v-switch.vue";
 /* istanbul ignore next */
-Switch.install = function(Vue) {
-  Vue.component(Switch.name, Switch);
+VSwitch.install = function (Vue) {
+  Vue.component(VSwitch.name, VSwitch);
 };
 
-export default Switch;
+export default VSwitch;

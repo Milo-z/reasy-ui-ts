@@ -1,5 +1,5 @@
 <template>
-  <transition name="pop-fade">
+<transition name="pop-fade">
     <div class="dialog" v-if="isShowMessageBox">
       <div class="overlay" @click="isShowMessageBox = false;"></div>
       <div class="dialog-container message-content">
@@ -9,8 +9,8 @@
             <span class="dialog-close v-icon-close" @click="isShowMessageBox = false;"></span>
           </div>
           <div class="content">
-            <div v-if="parseHtml" v-html="content"></div>
-            <div v-else>{{content}}</div>
+            <div class="content-tips" v-if="parseHtml" v-html="content"></div>
+            <div class="content-tips" v-else>{{content}}</div>
           </div>
           <div class="btn-group">
             <button v-show="hasCancel" class="btn" @click="cancel()">{{cancelText}}</button> &nbsp;&nbsp;
@@ -21,6 +21,7 @@
     </div>
   </transition>
 </template>
+
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 
@@ -29,8 +30,8 @@ export default class MessageBox extends Vue {
     title = "";
     isShowMessageBox = false;
     parseHtml = false;
-    okText = ("确定");
-    cancelText = ("取消");
+    okText = _("OK");
+    cancelText = _("Cancel");
     content = "";
     resolve: Function = function() {};
     reject: Function = function() {};
@@ -44,7 +45,6 @@ export default class MessageBox extends Vue {
     cancel() {
       this.isShowMessageBox = false;
       if (this.hasCancel) {
-        //todo: 处理没有reject的情况
         this.reject();
       }
     }
@@ -59,3 +59,4 @@ export default class MessageBox extends Vue {
     }
 }
 </script>
+

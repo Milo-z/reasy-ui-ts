@@ -1,5 +1,5 @@
 <template>
-  <div class="progress-content">
+<div class="progress-content">
     <div class="h2-title">
       <slot name="header"></slot>
     </div>
@@ -12,6 +12,7 @@
     <slot></slot>
   </div>
 </template>
+
 <script lang="ts">
 import { Vue, Prop, Component, Watch } from "vue-property-decorator";
 
@@ -36,3 +37,4 @@ export default class VUpProgress extends Vue {
   }
 }
 </script>
+

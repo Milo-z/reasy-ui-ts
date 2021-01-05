@@ -1,7 +1,7 @@
-import Column from "./v-column.vue";
+import VInputGroup from "./v-column.vue";
 /* istanbul ignore next */
-Column.install = function(Vue) {
-  Vue.component(Column.name, Column);
+VInputGroup.install = function (Vue) {
+  Vue.component(VInputGroup.name, VInputGroup);
 };
 
-export default Column;
+export default VInputGroup;

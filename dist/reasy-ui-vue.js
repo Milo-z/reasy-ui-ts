@@ -1122,14 +1122,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyDeepData", function() { return copyDeepData; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "formMessage", function() { return formMessage; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkData", function() { return checkData; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkSubmit", function() { return checkSubmit; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDefined", function() { return isDefined; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isObject", function() { return isObject; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hasClass", function() { return hasClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addClass", function() { return addClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "removeClass", function() { return removeClass; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "debounce", function() { return debounce; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isNotNullOrEmpty", function() { return isNotNullOrEmpty; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
 
 function isObject(obj) {
@@ -1205,14 +1203,17 @@ function removeClass(el, cls) {
  * @param {string} [value] 元素的值
  */
 function checkData(dataKey, value) {
-    var val = isDefined(value) ? value : dataKey.val || "", errMsg = "", handleValid, _this = this;
-    if (dataKey.show === false || dataKey.ignore === true || dataKey.disabled === true) {
+    var val = isDefined(value) ? value : dataKey.val, errMsg = "", handleValid;
+    if (!isDefined(val)) {
+        return true;
+    }
+    if (dataKey.show === false || dataKey.ignore || dataKey.disabled) {
         //忽略验证时
         return true;
     }
-    if (dataKey.required) {
+    if (dataKey.required !== false) {
         if (val === "" || val.length === 0) {
-            dataKey.error = _("Required");
+            dataKey.error = _("This field cannot be blank.");
             return false;
         }
     }
@@ -1230,30 +1231,30 @@ function checkData(dataKey, value) {
             return true;
         }
     }
-    if (!Array.isArray(dataKey.valid)) {
-        if (dataKey.valid) {
-            dataKey.valid = [dataKey.valid];
-        }
-        else {
-            //不存在数据验证时，直接返回
-            isDefined(dataKey.error) && (dataKey.error = "");
-            return true;
-        }
+    //未定义验证类型时
+    if (!dataKey.valid) {
+        dataKey.error = "";
+        return true;
     }
-    dataKey.valid &&
-        dataKey.valid.forEach(function (item) {
-            handleValid = (_this.$valid || {})[item.type];
-            if (handleValid && !errMsg) {
-                // edit by xc item.args可能为undefined
-                item.args = item.args || [];
-                if (typeof handleValid == "function") {
-                    errMsg = handleValid.apply(void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], item.args));
-                }
-                else if (typeof handleValid.all === "function") {
-                    errMsg = handleValid.all.apply(handleValid, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], item.args));
-                }
-            }
-        });
+    //数据验证函数
+    handleValid = this.$valid[dataKey.valid] || {};
+    //验证参数
+    var args = [];
+    if (dataKey.min != undefined) {
+        args.push(dataKey.min);
+    }
+    if (dataKey.max != undefined) {
+        args.push(dataKey.max);
+    }
+    if (dataKey.msg != undefined) {
+        args.push(dataKey.msg);
+    }
+    if (typeof handleValid == "function") {
+        errMsg = handleValid.apply(void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], args));
+    }
+    else if (typeof handleValid.all === "function") {
+        errMsg = handleValid.all.apply(handleValid, Object(tslib__WEBPACK_IMPORTED_MODULE_0__[/* __spreadArrays */ "c"])([val], args));
+    }
     //数据验证
     if (errMsg) {
         dataKey.error = errMsg;
@@ -1352,22 +1353,6 @@ function sortByKey(item1, item2, fields, sortTypeObj) {
     }
     return 0;
 }
-function checkSubmit(dataObj) {
-    var errorMsg = true, checkFail = false;
-    for (var prop in dataObj) {
-        if (typeof dataObj[prop] != "object" || !isDefined(dataObj[prop].val)) {
-            continue;
-        }
-        errorMsg = checkData.call(this, dataObj[prop], true);
-        if (!errorMsg) {
-            checkFail = true;
-        }
-    }
-    if (checkFail) {
-        return false;
-    }
-    return true;
-}
 /**
  * 错误提示信息
  *
@@ -1407,9 +1392,12 @@ var FormMessage = /** @class */ (function () {
         }
         this.msg = msg;
         this.time = showTime || 2000 + msg.length * 50;
-        elem.innerHTML = this.msg;
         if (_this.success) {
             addClass(elem, "message-success");
+            elem.innerHTML = "<span class=\"form-message-icon v-icon-notice-success\"></span>" + this.msg;
+        }
+        else {
+            elem.innerHTML = "<span class=\"form-message-icon v-icon-notice-error\"></span>" + this.msg;
         }
         containerElem.appendChild(elem);
         setTimeout(function () {
@@ -1421,6 +1409,7 @@ var FormMessage = /** @class */ (function () {
             setTimeout(function () {
                 removeClass(elem, "out");
                 removeClass(elem, "message-success");
+                elem.innerHTML = "";
                 _this.elemPool.push(elem);
                 containerElem.removeChild(elem);
             }, 300);
@@ -1476,12 +1465,6 @@ function debounce(func, wait, immediate) {
         timeout = null;
     };
     return debounced;
-}
-function isNotNullOrEmpty(val) {
-    if (!!val) {
-        return true;
-    }
-    return val !== "" && val !== undefined && val !== null;
 }
 
 
@@ -1700,9 +1683,9 @@ var _index21 = _interopRequireDefault(_index20);
 
 var _index22 = __webpack_require__(25);
 
-var _index23 = __webpack_require__(27);
+var _index23 = _interopRequireDefault(_index22);
 
-var _index24 = _interopRequireDefault(_index23);
+var _index24 = __webpack_require__(26);
 
 var _index25 = __webpack_require__(28);
 
@@ -1724,7 +1707,11 @@ var _index33 = __webpack_require__(32);
 
 var _index34 = _interopRequireDefault(_index33);
 
-var _base = __webpack_require__(33);
+var _index35 = __webpack_require__(33);
+
+var _index36 = _interopRequireDefault(_index35);
+
+var _base = __webpack_require__(34);
 
 var _base2 = _interopRequireDefault(_base);
 
@@ -1732,23 +1719,26 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 //import Pop from "./pop/index.js";
 
-//import Slider from "./slider/index.js";
-var components = [_index2.default, _index4.default, _index6.default, _index8.default, _index10.default, _index12.default, _index14.default, _index16.default, _index18.default, _index19.Progress,
-//UpProgress,
-_index21.default, _index22.VForm, _index22.VFormItem, _index24.default, _index26.default, _index28.default, _index30.default, _index32.default, _index34.default];
-//import Collapse from "./collapse/index.js";
-//import Picker from "./picker/index.js";
-
 //import Area from "./area/index.js";
 
 /*全局组件*/
 
+var components = { VDialog: _index2.default, VAlert: _index4.default, VElem: _index6.default, VTable: _index8.default, VInput: _index10.default, VRadio: _index12.default, VSelect: _index14.default, VCheckbox: _index16.default, VButton: _index18.default, VProgress: _index19.VProgress,
+  //UpProgress,
+  VSwitch: _index21.default, VForm: _index24.VForm, VFormItem: _index24.VFormItem, VItem: _index26.default, VText: _index28.default, VInputGroup: _index30.default, VIp: _index32.default, VMac: _index34.default, VUpload: _index36.default, VSlider: _index23.default };
+//import Collapse from "./collapse/index.js";
+//import Picker from "./picker/index.js";
+
+
 var install = function install(Vue) {
   window.Vue = Vue;
   Vue.use(_base2.default);
-  components.forEach(function (component) {
-    Vue.component(component.name, component);
-  });
+  for (var item in components) {
+    Vue.component(item, components[item]);
+  }
+  // components.forEach(component => {
+  //   Vue.component(component.name, component);
+  // });
 };
 
 /* istanbul ignore if */
@@ -1757,27 +1747,30 @@ if (typeof window !== "undefined" && window.Vue) {
 }
 exports.default = {
   install: install,
-  Dialog: _index2.default,
-  Alert: _index4.default,
+  VDialog: _index2.default,
+  VAlert: _index4.default,
   //Header,
-  Elem: _index6.default,
-  Table: _index8.default,
-  Input: _index10.default,
-  Radio: _index12.default,
-  Select: _index14.default,
-  Checkbox: _index16.default,
-  Button: _index18.default,
-  Progress: _index19.Progress,
-  Switch: _index21.default,
-  //Slider,
-  VForm: _index22.VForm,
-  VFormItem: _index22.VFormItem,
-  Item: _index24.default,
+  VElem: _index6.default,
+  VTable: _index8.default,
+  VInput: _index10.default,
+  VRadio: _index12.default,
+  VSelect: _index14.default,
+  VCheckbox: _index16.default,
+  VButton: _index18.default,
+  VProgress: _index19.VProgress,
+  VSwitch: _index21.default,
+  VSlider: _index23.default,
+  VForm: _index24.VForm,
+  VFormItem: _index24.VFormItem,
+  VItem: _index26.default,
   //Pop,
-  Text: _index26.default,
+  VText: _index28.default,
+  VInputGroup: _index30.default,
+  VIp: _index32.default,
+  VMac: _index34.default,
   //Picker,
   //Collapse,
-  Upload: _index34.default,
+  VUpload: _index36.default,
   Base: _base2.default
 };
 
@@ -1796,7 +1789,7 @@ exports.default = {
 
 exports.__esModule = true;
 
-var _vDialog = __webpack_require__(36);
+var _vDialog = __webpack_require__(37);
 
 var _vDialog2 = _interopRequireDefault(_vDialog);
 
@@ -1818,7 +1811,7 @@ exports.default = _vDialog2.default;
 
 exports.__esModule = true;
 
-var _vAlert = __webpack_require__(37);
+var _vAlert = __webpack_require__(38);
 
 var _vAlert2 = _interopRequireDefault(_vAlert);
 
@@ -1840,7 +1833,7 @@ exports.default = _vAlert2.default;
 
 exports.__esModule = true;
 
-var _vElem = __webpack_require__(38);
+var _vElem = __webpack_require__(39);
 
 var _vElem2 = _interopRequireDefault(_vElem);
 
@@ -1862,7 +1855,7 @@ exports.default = _vElem2.default;
 
 exports.__esModule = true;
 
-var _vTable = __webpack_require__(39);
+var _vTable = __webpack_require__(40);
 
 var _vTable2 = _interopRequireDefault(_vTable);
 
@@ -1884,7 +1877,7 @@ exports.default = _vTable2.default;
 
 exports.__esModule = true;
 
-var _vInput = __webpack_require__(40);
+var _vInput = __webpack_require__(41);
 
 var _vInput2 = _interopRequireDefault(_vInput);
 
@@ -1906,7 +1899,7 @@ exports.default = _vInput2.default;
 
 exports.__esModule = true;
 
-var _vRadio = __webpack_require__(41);
+var _vRadio = __webpack_require__(42);
 
 var _vRadio2 = _interopRequireDefault(_vRadio);
 
@@ -1928,7 +1921,7 @@ exports.default = _vRadio2.default;
 
 exports.__esModule = true;
 
-var _vSelect = __webpack_require__(42);
+var _vSelect = __webpack_require__(43);
 
 var _vSelect2 = _interopRequireDefault(_vSelect);
 
@@ -1950,7 +1943,7 @@ exports.default = _vSelect2.default;
 
 exports.__esModule = true;
 
-var _vCheckbox = __webpack_require__(43);
+var _vCheckbox = __webpack_require__(44);
 
 var _vCheckbox2 = _interopRequireDefault(_vCheckbox);
 
@@ -1972,7 +1965,7 @@ exports.default = _vCheckbox2.default;
 
 exports.__esModule = true;
 
-var _vButton = __webpack_require__(44);
+var _vButton = __webpack_require__(45);
 
 var _vButton2 = _interopRequireDefault(_vButton);
 
@@ -1993,9 +1986,9 @@ exports.default = _vButton2.default;
 
 
 exports.__esModule = true;
-exports.Progress = undefined;
+exports.VProgress = undefined;
 
-var _vProgress = __webpack_require__(45);
+var _vProgress = __webpack_require__(46);
 
 var _vProgress2 = _interopRequireDefault(_vProgress);
 
@@ -2008,7 +2001,7 @@ _vProgress2.default.install = function (Vue) {
   //Vue.component(UpProgress.name, UpProgress);
 };
 
-exports.Progress = _vProgress2.default;
+exports.VProgress = _vProgress2.default;
 
 /***/ }),
 /* 24 */
@@ -2019,7 +2012,7 @@ exports.Progress = _vProgress2.default;
 
 exports.__esModule = true;
 
-var _vSwitch = __webpack_require__(46);
+var _vSwitch = __webpack_require__(47);
 
 var _vSwitch2 = _interopRequireDefault(_vSwitch);
 
@@ -2040,13 +2033,35 @@ exports.default = _vSwitch2.default;
 
 
 exports.__esModule = true;
+
+var _vSlider = __webpack_require__(48);
+
+var _vSlider2 = _interopRequireDefault(_vSlider);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/* istanbul ignore next */
+_vSlider2.default.install = function (Vue) {
+  Vue.component(_vSlider2.default.name, _vSlider2.default);
+};
+
+exports.default = _vSlider2.default;
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
 exports.VFormItem = exports.VForm = undefined;
 
-var _vForm = __webpack_require__(47);
+var _vForm = __webpack_require__(49);
 
 var _vForm2 = _interopRequireDefault(_vForm);
 
-var _vFormItem = __webpack_require__(48);
+var _vFormItem = __webpack_require__(50);
 
 var _vFormItem2 = _interopRequireDefault(_vFormItem);
 
@@ -2062,7 +2077,7 @@ exports.VForm = _vForm2.default;
 exports.VFormItem = _vFormItem2.default;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2072,7 +2087,7 @@ exports.VFormItem = _vFormItem2.default;
  /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_node_modules_css_loader_index_js_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_node_modules_sass_loader_dist_cjs_js_ref_0_3_node_modules_sass_resources_loader_lib_loader_js_ref_0_4_node_modules_vue_loader_lib_index_js_vue_loader_options_v_form_item_vue_vue_type_style_index_0_id_83e767ac_lang_scss_scoped_true___WEBPACK_IMPORTED_MODULE_0___default.a); 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2080,7 +2095,7 @@ exports.VFormItem = _vFormItem2.default;
 
 exports.__esModule = true;
 
-var _vItem = __webpack_require__(49);
+var _vItem = __webpack_require__(51);
 
 var _vItem2 = _interopRequireDefault(_vItem);
 
@@ -2094,7 +2109,7 @@ _vItem2.default.install = function (Vue) {
 exports.default = _vItem2.default;
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2102,7 +2117,7 @@ exports.default = _vItem2.default;
 
 exports.__esModule = true;
 
-var _vText = __webpack_require__(50);
+var _vText = __webpack_require__(52);
 
 var _vText2 = _interopRequireDefault(_vText);
 
@@ -2116,7 +2131,7 @@ _vText2.default.install = function (Vue) {
 exports.default = _vText2.default;
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2124,7 +2139,7 @@ exports.default = _vText2.default;
 
 exports.__esModule = true;
 
-var _vColumn = __webpack_require__(51);
+var _vColumn = __webpack_require__(53);
 
 var _vColumn2 = _interopRequireDefault(_vColumn);
 
@@ -2138,7 +2153,7 @@ _vColumn2.default.install = function (Vue) {
 exports.default = _vColumn2.default;
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2146,7 +2161,7 @@ exports.default = _vColumn2.default;
 
 exports.__esModule = true;
 
-var _vIp = __webpack_require__(52);
+var _vIp = __webpack_require__(54);
 
 var _vIp2 = _interopRequireDefault(_vIp);
 
@@ -2160,7 +2175,7 @@ _vIp2.default.install = function (Vue) {
 exports.default = _vIp2.default;
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2168,7 +2183,7 @@ exports.default = _vIp2.default;
 
 exports.__esModule = true;
 
-var _vMac = __webpack_require__(53);
+var _vMac = __webpack_require__(55);
 
 var _vMac2 = _interopRequireDefault(_vMac);
 
@@ -2182,7 +2197,7 @@ _vMac2.default.install = function (Vue) {
 exports.default = _vMac2.default;
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2190,7 +2205,7 @@ exports.default = _vMac2.default;
 
 exports.__esModule = true;
 
-var _vUpload = __webpack_require__(54);
+var _vUpload = __webpack_require__(56);
 
 var _vUpload2 = _interopRequireDefault(_vUpload);
 
@@ -2204,7 +2219,7 @@ _vUpload2.default.install = function (Vue) {
 exports.default = _vUpload2.default;
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2216,11 +2231,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _libs = __webpack_require__(5);
 
-var _MessageBox = __webpack_require__(55);
+var _MessageBox = __webpack_require__(57);
 
 var _MessageBox2 = _interopRequireDefault(_MessageBox);
 
-var _directives = __webpack_require__(34);
+var _Dropdown = __webpack_require__(58);
+
+var _Dropdown2 = _interopRequireDefault(_Dropdown);
+
+var _directives = __webpack_require__(35);
 
 var _directives2 = _interopRequireDefault(_directives);
 
@@ -2232,7 +2251,20 @@ var install = function install(Vue) {
 
   //定义数据验证
   Vue.prototype.$checkData = _libs.checkData;
-  Vue.prototype.$checkAll = _libs.checkSubmit;
+
+  var dropdownBox = void 0;
+  var DropDownBoxInstance = Vue.extend(_Dropdown2.default);
+
+  function showDropdown() {
+    var dropdownBoxEl = void 0;
+    if (!dropdownBox) {
+      dropdownBox = new DropDownBoxInstance();
+      dropdownBoxEl = dropdownBox.$mount().$el;
+      document.body.appendChild(dropdownBoxEl);
+    }
+  }
+
+  showDropdown();
 
   /**
    * 显示弹出层
@@ -2278,6 +2310,12 @@ var install = function install(Vue) {
     });
   }
 
+  Vue.prototype._dropdown = function (vm, css) {
+    showDropdown();
+    dropdownBox.css = css;
+    dropdownBox.relativeVm = vm;
+  };
+
   //提示信息
   Vue.prototype.$message = function (msg, time) {
     _libs.formMessage.success = false;
@@ -2294,25 +2332,26 @@ var install = function install(Vue) {
   Vue.prototype.$confirm = function (msgOptions) {
     return showDialog(msgOptions, true);
   };
-
-  Vue.prototype._ = function (key, replacements) {
-    var nkey = key,
-        index = void 0,
-        count = 0;
-    if (!replacements) {
-      return nkey;
-    }
-    if (replacements instanceof Array && replacements.length !== 0) {
-      while ((index = nkey.indexOf("%s")) !== -1) {
-        nkey = nkey.slice(0, index) + replacements[count] + nkey.slice(index + 2);
-        count = count + 1 === replacements.length ? count : count + 1;
+  if (typeof Vue.prototype._ !== "function") {
+    Vue.prototype._ = function (key, replacements) {
+      var nkey = key,
+          index = void 0,
+          count = 0;
+      if (!replacements) {
+        return nkey;
       }
-    } else if (typeof replacements === "string") {
-      index = nkey.indexOf("%s");
-      nkey = nkey.slice(0, index) + replacements + nkey.slice(index + 2);
-    }
-    return nkey;
-  };
+      if (replacements instanceof Array && replacements.length !== 0) {
+        while ((index = nkey.indexOf("%s")) !== -1) {
+          nkey = nkey.slice(0, index) + replacements[count] + nkey.slice(index + 2);
+          count = count + 1 === replacements.length ? count : count + 1;
+        }
+      } else if (typeof replacements === "string") {
+        index = nkey.indexOf("%s");
+        nkey = nkey.slice(0, index) + replacements + nkey.slice(index + 2);
+      }
+      return nkey;
+    };
+  }
 
   Vue.prototype.$alert = function (msgOptions) {
     return showDialog(msgOptions);
@@ -2350,7 +2389,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2358,7 +2397,7 @@ exports.default = {
 
 exports.__esModule = true;
 
-var _vTooltip = __webpack_require__(35);
+var _vTooltip = __webpack_require__(36);
 
 var _vTooltip2 = _interopRequireDefault(_vTooltip);
 
@@ -2376,8 +2415,9 @@ document.addEventListener('mousedown', function (e) {
 });
 
 document.addEventListener('mouseup', function (e) {
+  var dropdownEl = document.getElementsByClassName("-r-select-dropdown")[0];
   nodeList.forEach(function (node) {
-    if (!node.contains(e.target)) {
+    if (!node.contains(e.target) && (!dropdownEl || !dropdownEl.contains(e.target))) {
       //当点击元素不是当前node的子元素时
       node[ctx].documentHandler(e, startClick);
     }
@@ -2401,7 +2441,7 @@ var install = function install(Vue) {
   var tooltipBox = new TooltipBox(),
       msgBoxEl = tooltipBox.$mount().$el;
 
-  window.addEventListener("scroll", function () {
+  document.body.addEventListener("scroll", function () {
     tooltipBox.show = false;
   });
 
@@ -2540,7 +2580,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2573,7 +2613,7 @@ component.options.__file = "src/components/v-tooltip.vue"
 /* harmony default export */ __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2725,10 +2765,10 @@ var v_dialogvue_type_script_lang_ts_VDialog = /** @class */ (function (_super) {
         Object(vue_property_decorator["c" /* Prop */])({ default: true })
     ], VDialog.prototype, "hasClose", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: _("确定") })
+        Object(vue_property_decorator["c" /* Prop */])({ default: _("OK") })
     ], VDialog.prototype, "okText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: _("取消") })
+        Object(vue_property_decorator["c" /* Prop */])({ default: _("Cancel") })
     ], VDialog.prototype, "cancelText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])({ default: true })
@@ -2776,7 +2816,7 @@ component.options.__file = "src/components/dialog/v-dialog.vue"
 /* harmony default export */ var v_dialog = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2885,7 +2925,7 @@ component.options.__file = "src/components/alert/v-alert.vue"
 /* harmony default export */ var v_alert = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3029,7 +3069,7 @@ component.options.__file = "src/components/elem/v-elem.vue"
 /* harmony default export */ var v_elem = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3087,7 +3127,7 @@ var render = function() {
                     }
                   }
                 },
-                [_vm._v("\n      " + _vm._s(_vm.searchText) + "\n    ")]
+                [_vm._v("\r\n        " + _vm._s(_vm.searchText) + "\r\n      ")]
               )
             : _vm._e(),
           _vm._v(" "),
@@ -3107,7 +3147,11 @@ var render = function() {
           "table",
           {
             staticClass: "table table-fixed table-header",
-            style: { "padding-right": _vm.tableScroll ? "17px" : "" }
+            style: {
+              "padding-right": _vm.tableScroll
+                ? _vm.tableScrollWidth + "px"
+                : ""
+            }
           },
           [
             _c("thead", [
@@ -3164,6 +3208,8 @@ var render = function() {
             _c(
               "tbody",
               [
+                _vm._t("header"),
+                _vm._v(" "),
                 _vm._l(_vm.pageData, function(rowsData, rowIndex) {
                   return _c(
                     "tr",
@@ -3205,6 +3251,7 @@ var render = function() {
                                   })
                                 : col.fn
                                 ? _c("v-td", {
+                                    staticClass: "fixed",
                                     attrs: {
                                       rowsData: rowsData,
                                       fn: col.fn,
@@ -3442,6 +3489,20 @@ vue_property_decorator["e" /* Vue */].component("VTableCol", {
     },
     render: function (createElement) {
         return createElement("div");
+    },
+    watch: {
+        title: function (val) {
+            this.$dispatch("VTable", "update.column", {
+                width: this.width,
+                title: this.title,
+                field: this.field,
+                selectAll: this.selectAll !== false,
+                isSearch: this.isSearch !== false,
+                fn: this.$scopedSlots.default,
+                tooltip: this.tooltip !== false,
+                css: this.css
+            });
+        }
     }
 });
 vue_property_decorator["e" /* Vue */].component("VTd", {
@@ -3449,7 +3510,7 @@ vue_property_decorator["e" /* Vue */].component("VTd", {
     render: function (createElement) {
         this.rowsData.$index = this.index;
         return createElement("div", [this.fn(this.rowsData)]);
-    }
+    },
 });
 var CHECKBOX_UNCHECKED = "0";
 var CHECKBOX_CHECKED = "1";
@@ -3464,6 +3525,7 @@ var v_tablevue_type_script_lang_ts_VTable = /** @class */ (function (_super) {
         _this.columns = []; //表头信息
         _this.checkboxField = "";
         _this.tableScroll = false;
+        _this.tableScrollWidth = 17;
         _this.bodyHeight = 0;
         _this.tableData = []; //表格数据
         _this.checkboxAllVal = CHECKBOX_UNCHECKED; //全选
@@ -3506,14 +3568,14 @@ var v_tablevue_type_script_lang_ts_VTable = /** @class */ (function (_super) {
     }
     Object.defineProperty(VTable.prototype, "pageTips", {
         get: function () {
-            return _("第%s页，共%s页", [this.page, this.totalPage]);
+            return _("Page %s, Total %s pages", [this.page, this.totalPage]);
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(VTable.prototype, "dataTips", {
         get: function () {
-            return _("总共%s条数据", [this.tableData.length || 0]);
+            return _("Total %s items", [this.tableData.length || 0]);
         },
         enumerable: false,
         configurable: true
@@ -3629,6 +3691,20 @@ var v_tablevue_type_script_lang_ts_VTable = /** @class */ (function (_super) {
             }
             _this.columns.push(item);
         });
+        this.$on("update.column", function (item) {
+            var exsitIndex = -1;
+            var exsitCol = _this.columns.filter(function (colItem, index) {
+                if (item.field == colItem.field) {
+                    exsitIndex = index;
+                    return true;
+                }
+            });
+            if (exsitCol.length === 0) {
+                return;
+            }
+            //替换
+            _this.columns.splice(exsitIndex, 1, item);
+        });
         this.$on("remove.column", function (field) {
             _this.columns = _this.columns.filter(function (item) { return item.field != field; });
         });
@@ -3690,6 +3766,7 @@ var v_tablevue_type_script_lang_ts_VTable = /** @class */ (function (_super) {
     VTable.prototype.updateScroll = function () {
         //计算滚动条显示
         this.$nextTick(function () {
+            var _this = this;
             if ((this.$refs["table-body-tr"] || []).length === 0) {
                 return;
             }
@@ -3704,6 +3781,14 @@ var v_tablevue_type_script_lang_ts_VTable = /** @class */ (function (_super) {
             else {
                 this.tableScroll = false;
             }
+            this.$nextTick(function () {
+                if (!_this.tableScroll) {
+                    return;
+                }
+                var tableWidth = _this.$refs["table-body"].offsetWidth;
+                var tableParentWidth = _this.$refs["table-body"].parentNode.offsetWidth;
+                _this.tableScrollWidth = tableParentWidth - tableWidth;
+            });
         });
     };
     //获取当前页的数据
@@ -3758,10 +3843,10 @@ var v_tablevue_type_script_lang_ts_VTable = /** @class */ (function (_super) {
         Object(vue_property_decorator["c" /* Prop */])({ default: false })
     ], VTable.prototype, "isLoading", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: _("加载中") })
+        Object(vue_property_decorator["c" /* Prop */])({ default: _("Loading...") })
     ], VTable.prototype, "loadingText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: _("暂无数据") })
+        Object(vue_property_decorator["c" /* Prop */])({ default: "" })
     ], VTable.prototype, "noData", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])({ default: 10 })
@@ -3815,7 +3900,7 @@ component.options.__file = "src/components/table/v-table.vue"
 /* harmony default export */ var v_table = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3991,7 +4076,7 @@ var render = function() {
             }
           }),
       _vm._v(" "),
-      !_vm.supportPlaceholder && !_vm.val
+      !_vm.supportPlaceholder && !_vm.inputValue
         ? _c(
             "div",
             {
@@ -4002,7 +4087,7 @@ var render = function() {
                 }
               }
             },
-            [_vm._v("\n    " + _vm._s(_vm.placeholder) + "\n  ")]
+            [_vm._v("\r\n      " + _vm._s(_vm.placeholder) + "\r\n    ")]
           )
         : _vm._e(),
       _vm._v(" "),
@@ -4020,7 +4105,7 @@ var render = function() {
       _vm._v(" "),
       _vm.error
         ? _c("div", { staticClass: "error-bottom text-error" }, [
-            _vm._v("\n    " + _vm._s(_vm.msg || _vm.error) + "\n  ")
+            _vm._v("\r\n      " + _vm._s(_vm.msg || _vm.error) + "\r\n    ")
           ])
         : _vm._e()
     ]
@@ -4098,7 +4183,7 @@ var v_inputvue_type_script_lang_ts_VInput = /** @class */ (function (_super) {
         }
     };
     VInput.prototype.onDisabledChanged = function (newValue) {
-        if (!newValue) {
+        if (newValue) {
             this.$emit("changeProp", "error", "");
         }
     };
@@ -4199,7 +4284,7 @@ component.options.__file = "src/components/input/v-input.vue"
 /* harmony default export */ var v_input = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4415,7 +4500,7 @@ component.options.__file = "src/components/radio/v-radio.vue"
 /* harmony default export */ var v_radio = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4507,8 +4592,8 @@ var render = function() {
                 {
                   name: "show",
                   rawName: "v-show",
-                  value: !_vm.isEdit,
-                  expression: "!isEdit"
+                  value: _vm.showLabel,
+                  expression: "showLabel"
                 }
               ],
               ref: "inputtext",
@@ -4539,84 +4624,12 @@ var render = function() {
         ]
       ),
       _vm._v(" "),
-      _c("transition", [
-        _c(
-          "ul",
-          {
-            directives: [
-              {
-                name: "show",
-                rawName: "v-show",
-                value: _vm.dropdownShow && !_vm.disabled && !_vm.$isMobile,
-                expression: "dropdownShow && !disabled && !$isMobile"
-              }
-            ],
-            ref: "dropdown",
-            staticClass: "select-dropdown",
-            style: { top: _vm.dropdownTop + "px" }
-          },
-          [
-            _vm._l(_vm.sortArray, function(item) {
-              return [
-                _c(
-                  "li",
-                  {
-                    key: item.value,
-                    staticClass: "select-li",
-                    class: {
-                      active: _vm.value == item.value,
-                      disabled: item.disabled
-                    },
-                    attrs: { value: item.value },
-                    on: {
-                      click: function($event) {
-                        $event.stopPropagation()
-                        return _vm.changeSelect(
-                          item.value,
-                          item.title,
-                          item.disabled
-                        )
-                      }
-                    }
-                  },
-                  [_vm._v("\n          " + _vm._s(item.title) + "\n        ")]
-                )
-              ]
-            }),
-            _vm._v(" "),
-            _c(
-              "li",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: _vm.hasManual,
-                    expression: "hasManual"
-                  }
-                ],
-                staticClass: "select-li",
-                on: {
-                  click: function($event) {
-                    $event.stopPropagation()
-                    return _vm.hanlderManual()
-                  }
-                }
-              },
-              [_vm._v(_vm._s(_vm.manualText))]
-            )
-          ],
-          2
-        )
-      ]),
-      _vm._v(" "),
       _vm.error
         ? _c("div", { staticClass: "error-bottom text-error" }, [
             _vm._v(_vm._s(_vm.msg || _vm.error))
           ])
         : _vm._e()
-    ],
-    1
+    ]
   )
 }
 var staticRenderFns = []
@@ -4650,7 +4663,7 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         _this.isEdit = false;
         _this.isInput = false; //是否正在输入
         _this.dropdownShow = false;
-        _this.dropdownTop = 0;
+        _this.showLabel = true;
         _this.lastLabel = "";
         return _this;
     }
@@ -4674,7 +4687,8 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
             }
             return this.value;
         },
-        set: function (val) { },
+        set: function (val) {
+        },
         enumerable: false,
         configurable: true
     });
@@ -4682,9 +4696,12 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         get: function () {
             var newVal = this.value;
             var varArr = this.sortArray.filter(function (item) { return item.value === newVal; });
-            //存在下拉列表
+            //存在下拉列表 
             if (varArr.length === 1) {
                 !this.isInput && (this.isEdit = false);
+                if (!this.showTitle) {
+                    return varArr[0].value;
+                }
                 return varArr[0].title;
             }
             //支持自定义时
@@ -4692,6 +4709,9 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
                 this.$nextTick(function () {
                     this.isEdit = true;
                 });
+            if (this.hasUnit) {
+                return newVal + this.unit;
+            }
             return newVal;
         },
         enumerable: false,
@@ -4711,6 +4731,7 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         this.inputValue = value;
         this.changeProp("error", "");
         this.setValue(value);
+        this.changeCallBack(value);
         this.handlerChange();
     };
     VSelect.prototype.handlerChange = function () {
@@ -4736,11 +4757,16 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         if (!this.disabled && !this.isEdit) {
             this.dropdownShow = !this.dropdownShow;
         }
+        if (!this.disabled && this.isEdit) {
+            this.showLabel = false;
+            this.input.focus();
+        }
     };
     /**
      * 失去焦点时，修改KEY值
      */
     VSelect.prototype.setKeyValue = function () {
+        this.showLabel = true;
         var val = this.input.value;
         var valArr = this.sortArray.filter(function (item) { return item.value === val; }), newVal;
         newVal = val;
@@ -4754,6 +4780,11 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
             this.isEdit = false;
         }
         this.isInput = false;
+        if (this.limitVal) {
+            if (+newVal <= 0.01) {
+                newVal = "0";
+            }
+        }
         if (newVal === this.value) {
             return;
         }
@@ -4773,7 +4804,7 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
     VSelect.prototype.handlerCallBack = function () {
         this.lastLabel = this.value;
         this.setValue(""); //选择自定义时，将值改为空
-        this.inputtext.style.display = "none";
+        this.showLabel = false;
         this.input.style.visibility = "visible";
         this.$nextTick(function () {
             this.changeProp("error", "");
@@ -4790,27 +4821,16 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         this.handlerChange();
     };
     VSelect.prototype.hide = function () {
-        this.dropdownShow = false;
+        this.dropdownShow && (this.dropdownShow = false);
     };
     VSelect.prototype.focus = function () {
         this.showOption();
     };
-    VSelect.prototype.setPosition = function () {
-        var dropdownHeight = this.dropdown.offsetHeight, inputRect = this.input.getBoundingClientRect(), bodyHeight = document.body.clientHeight;
-        if (inputRect.bottom + dropdownHeight > bodyHeight) {
-            this.dropdownTop = 0 - dropdownHeight - 8;
-        }
-        else {
-            this.dropdownTop = inputRect.height;
-        }
+    VSelect.prototype.beforeDestroy = function () {
+        this.hide();
     };
     VSelect.prototype.onDropChanged = function (newValue) {
-        if (newValue) {
-            //选中
-            this.$nextTick(function () {
-                this.setPosition();
-            });
-        }
+        this._dropdown(this, this.css);
     };
     VSelect.prototype.onShowChanged = function (newValue) {
         if (!newValue) {
@@ -4818,7 +4838,7 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         }
     };
     VSelect.prototype.onDisabledChanged = function (newValue) {
-        if (!newValue) {
+        if (newValue) {
             this.changeProp("error", "");
         }
     };
@@ -4853,10 +4873,16 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
         Object(vue_property_decorator["c" /* Prop */])({ default: "" })
     ], VSelect.prototype, "name", void 0);
     Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: "Mbps" })
+    ], VSelect.prototype, "unit", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])({ default: false })
     ], VSelect.prototype, "hasManual", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: _("自定义") })
+        Object(vue_property_decorator["c" /* Prop */])({ default: false })
+    ], VSelect.prototype, "hasUnit", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: _("Custom") })
     ], VSelect.prototype, "manualText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])({ default: "-1" })
@@ -4870,6 +4896,12 @@ var v_selectvue_type_script_lang_ts_VSelect = /** @class */ (function (_super) {
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])({ default: false })
     ], VSelect.prototype, "isNum", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: false })
+    ], VSelect.prototype, "limitVal", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: true })
+    ], VSelect.prototype, "showTitle", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])()
     ], VSelect.prototype, "type", void 0);
@@ -4947,7 +4979,7 @@ component.options.__file = "src/components/select/v-select.vue"
 /* harmony default export */ var v_select = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5242,7 +5274,7 @@ var v_checkboxvue_type_script_lang_ts_VCheckbox = /** @class */ (function (_supe
         Object(vue_property_decorator["c" /* Prop */])({ default: false })
     ], VCheckbox.prototype, "hasSelectAll", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: _("全选") })
+        Object(vue_property_decorator["c" /* Prop */])({ default: "" })
     ], VCheckbox.prototype, "selectAllText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])({ default: "" })
@@ -5319,7 +5351,7 @@ component.options.__file = "src/components/checkbox/v-checkbox.vue"
 /* harmony default export */ var v_checkbox = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5448,7 +5480,7 @@ component.options.__file = "src/components/button/v-button.vue"
 /* harmony default export */ var v_button = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5538,7 +5570,7 @@ var v_progressvue_type_script_lang_ts_VProgress = /** @class */ (function (_supe
             this.isShow = true;
             this.$nextTick(function () {
                 this.percenter = this.percent || 0;
-                this.update();
+                this.isAuto && this.update();
             });
         }
         else {
@@ -5549,6 +5581,11 @@ var v_progressvue_type_script_lang_ts_VProgress = /** @class */ (function (_supe
     };
     VProgress.prototype.onPercentChanged = function (val) {
         this.$emit("change", val);
+    };
+    VProgress.prototype.onManualChanged = function (val) {
+        if (!this.isAuto) {
+            this.percenter = this.percent;
+        }
     };
     VProgress.prototype.destroyed = function () {
         clearTimeout(this.progressTimer);
@@ -5569,6 +5606,9 @@ var v_progressvue_type_script_lang_ts_VProgress = /** @class */ (function (_supe
         Object(vue_property_decorator["c" /* Prop */])({ default: "center" })
     ], VProgress.prototype, "textAlign", void 0);
     Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: true })
+    ], VProgress.prototype, "isAuto", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])()
     ], VProgress.prototype, "intervalTime", void 0);
     Object(tslib_es6["a" /* __decorate */])([
@@ -5577,6 +5617,9 @@ var v_progressvue_type_script_lang_ts_VProgress = /** @class */ (function (_supe
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["f" /* Watch */])("percenter")
     ], VProgress.prototype, "onPercentChanged", null);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["f" /* Watch */])("percent")
+    ], VProgress.prototype, "onManualChanged", null);
     VProgress = Object(tslib_es6["a" /* __decorate */])([
         vue_property_decorator["a" /* Component */]
     ], VProgress);
@@ -5614,7 +5657,7 @@ component.options.__file = "src/components/progress/v-progress.vue"
 /* harmony default export */ var v_progress = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5711,7 +5754,7 @@ var v_switchvue_type_script_lang_ts_VSwitch = /** @class */ (function (_super) {
     });
     Object.defineProperty(VSwitch.prototype, "tips", {
         get: function () {
-            return this.checked ? _("开启") : _("关闭");
+            return this.checked ? _("Enable") : _("Disable");
         },
         enumerable: false,
         configurable: true
@@ -5815,7 +5858,204 @@ component.options.__file = "src/components/switch/v-switch.vue"
 /* harmony default export */ var v_switch = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 47 */
+/* 48 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./src/components/slider/v-slider.vue?vue&type=template&id=07a992b4&
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    {
+      directives: [
+        { name: "show", rawName: "v-show", value: _vm.show, expression: "show" }
+      ],
+      staticClass: "form-el-content"
+    },
+    [
+      _c("div", { staticClass: "form-slider", class: _vm.css }, [
+        _c(
+          "div",
+          { staticClass: "slider-content", style: { width: _vm.width + "px" } },
+          [
+            _c("div", {
+              staticClass: "slider-percent",
+              style: { width: _vm.left + "px" }
+            })
+          ]
+        ),
+        _vm._v(" "),
+        _c("div", {
+          staticClass: "slider-box",
+          style: { left: _vm.left + "px" },
+          on: {
+            mouseover: function($event) {
+              $event.stopPropagation()
+              return _vm.bindEvent($event)
+            },
+            mousedown: function($event) {
+              $event.stopPropagation()
+              return _vm.mouseStart($event)
+            }
+          }
+        }),
+        _vm._v(" "),
+        _c("div", { staticClass: "slider-number" }, [
+          _vm._v(_vm._s(_vm.vText) + "%")
+        ])
+      ])
+    ]
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+// CONCATENATED MODULE: ./src/components/slider/v-slider.vue?vue&type=template&id=07a992b4&
+
+// EXTERNAL MODULE: ./node_modules/tslib/tslib.es6.js
+var tslib_es6 = __webpack_require__(0);
+
+// EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
+var vue_property_decorator = __webpack_require__(1);
+
+// CONCATENATED MODULE: ./node_modules/ts-loader??ref--4!./node_modules/vue-loader/lib??vue-loader-options!./src/components/slider/v-slider.vue?vue&type=script&lang=ts&
+
+
+var v_slidervue_type_script_lang_ts_VSlider = /** @class */ (function (_super) {
+    Object(tslib_es6["b" /* __extends */])(VSlider, _super);
+    function VSlider() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.startX = 0;
+        _this.endX = 0;
+        _this.percent = 0;
+        _this.vText = 0;
+        _this.left = 0;
+        _this.lastLeft = 0;
+        _this.moveStart = false;
+        return _this;
+    }
+    Object.defineProperty(VSlider.prototype, "perNum", {
+        get: function () {
+            return Number(this.width) / (this.max - this.min);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    VSlider.prototype.created = function () {
+        var val = this.value;
+        if (val < this.min) {
+            val = this.min;
+            this.$emit("change", this.min);
+        }
+        this.vText = val;
+        this.left = this.perNum * (Number(val) - this.min);
+    };
+    VSlider.prototype.bindEvent = function () {
+        window.addEventListener("mousemove", this.mouseMove, false);
+        window.addEventListener("mouseup", this.mouseUp, false);
+    };
+    VSlider.prototype.mouseStart = function (e) {
+        if (this.disabled) {
+            return;
+        }
+        this.startX = e.pageX;
+        this.lastLeft = this.left;
+        this.moveStart = true;
+        //document.body.addClass("no-select");
+    };
+    VSlider.prototype.mouseMove = function (e) {
+        if (this.moveStart) {
+            this.endX = e.pageX;
+            this.left = this.lastLeft + this.endX - this.startX;
+            if (this.left < 0) {
+                this.left = 0;
+            }
+            if (this.left > this.width) {
+                this.left = Number(this.width);
+            }
+            this.vText = Math.round(Number(this.min) + this.left / this.perNum);
+        }
+    };
+    VSlider.prototype.mouseUp = function () {
+        this.moveStart = false;
+        window.removeEventListener("mousemove", this.mouseMove);
+        window.removeEventListener("mouseup", this.mouseUp);
+        this.$emit("change", this.vText);
+        this.changeCallBack(this.vText);
+    };
+    VSlider.prototype.destroyed = function () {
+        window.removeEventListener("mousemove", this.mouseMove);
+        window.removeEventListener("mouseup", this.mouseUp);
+    };
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: "" })
+    ], VSlider.prototype, "css", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: true })
+    ], VSlider.prototype, "show", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: "", type: [Number, String] })
+    ], VSlider.prototype, "value", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: 0 })
+    ], VSlider.prototype, "min", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: 100 })
+    ], VSlider.prototype, "max", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: false })
+    ], VSlider.prototype, "disabled", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: 200, type: [Number, String] })
+    ], VSlider.prototype, "width", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: function () { return function () { }; } })
+    ], VSlider.prototype, "changeCallBack", void 0);
+    VSlider = Object(tslib_es6["a" /* __decorate */])([
+        vue_property_decorator["a" /* Component */]
+    ], VSlider);
+    return VSlider;
+}(vue_property_decorator["e" /* Vue */]));
+/* harmony default export */ var v_slidervue_type_script_lang_ts_ = (v_slidervue_type_script_lang_ts_VSlider);
+
+// CONCATENATED MODULE: ./src/components/slider/v-slider.vue?vue&type=script&lang=ts&
+ /* harmony default export */ var slider_v_slidervue_type_script_lang_ts_ = (v_slidervue_type_script_lang_ts_); 
+// EXTERNAL MODULE: ./node_modules/vue-loader/lib/runtime/componentNormalizer.js
+var componentNormalizer = __webpack_require__(2);
+
+// CONCATENATED MODULE: ./src/components/slider/v-slider.vue
+
+
+
+
+
+/* normalize component */
+
+var component = Object(componentNormalizer["a" /* default */])(
+  slider_v_slidervue_type_script_lang_ts_,
+  render,
+  staticRenderFns,
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "src/components/slider/v-slider.vue"
+/* harmony default export */ var v_slider = __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+/* 49 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5917,7 +6157,6 @@ var v_formvue_type_script_lang_ts_VForm = /** @class */ (function (_super) {
     VForm.prototype.submitForm = function () {
         //有错
         if (!this.checkValidate()) {
-            this.$message(_("请检查错误信息"));
             return false;
         }
         //表单自定义事件
@@ -5949,10 +6188,10 @@ var v_formvue_type_script_lang_ts_VForm = /** @class */ (function (_super) {
         Object(vue_property_decorator["c" /* Prop */])({ default: "" })
     ], VForm.prototype, "css", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: "保存" })
+        Object(vue_property_decorator["c" /* Prop */])({ default: _("Save") })
     ], VForm.prototype, "submitText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: "取消" })
+        Object(vue_property_decorator["c" /* Prop */])({ default: _("Cancel") })
     ], VForm.prototype, "cancelText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])({ default: false })
@@ -6006,7 +6245,7 @@ component.options.__file = "src/components/form/v-form.vue"
 /* harmony default export */ var v_form = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 48 */
+/* 50 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6029,7 +6268,10 @@ var render = function() {
           },
           [
             _c("span", { ref: "labelTxt", staticClass: "keep-all" }, [
-              _vm._v(_vm._s(_vm.title))
+              _vm._v(_vm._s(_vm.title)),
+              _vm.hasColon
+                ? _c("span", [_vm._v(_vm._s(_vm.colonTips))])
+                : _vm._e()
             ]),
             _vm._v(" "),
             _vm.hasHelpInfo
@@ -6061,6 +6303,7 @@ var render = function() {
                   _vm.vname,
                   _vm._b(
                     {
+                      ref: "item",
                       tag: "component",
                       class: { "is-error": _vm.error },
                       on: {
@@ -6083,9 +6326,9 @@ var render = function() {
                 )
               : _vm._e(),
             _vm._v(" "),
-            _vm._t("default")
+            _c("span", { staticClass: "vertical-top" }, [_vm._t("default")], 2)
           ],
-          2
+          1
         )
       ])
     : !_vm.title && _vm.dataKey.show !== false
@@ -6136,7 +6379,11 @@ var tslib_es6 = __webpack_require__(0);
 // EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
 var vue_property_decorator = __webpack_require__(1);
 
+// EXTERNAL MODULE: ./src/components/libs.ts
+var libs = __webpack_require__(5);
+
 // CONCATENATED MODULE: ./node_modules/ts-loader??ref--4!./node_modules/vue-loader/lib??vue-loader-options!./src/components/form/v-form-item.vue?vue&type=script&lang=ts&
+
 
 
 var v_form_itemvue_type_script_lang_ts_VFormItem = /** @class */ (function (_super) {
@@ -6150,6 +6397,21 @@ var v_form_itemvue_type_script_lang_ts_VFormItem = /** @class */ (function (_sup
         //组件标题宽度
         get: function () {
             return this.$getLabelWidth();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(VFormItem.prototype, "hasColon", {
+        get: function () {
+            return this.title && this.title.replace(/[ ]/g, "") !== "";
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(VFormItem.prototype, "colonTips", {
+        get: function () {
+            //从全局vue对象中获取
+            return this.$colonTips || "";
         },
         enumerable: false,
         configurable: true
@@ -6187,10 +6449,11 @@ var v_form_itemvue_type_script_lang_ts_VFormItem = /** @class */ (function (_sup
     };
     //值修改事件
     VFormItem.prototype.changeValue = function (val) {
+        var _this = this;
         this.$emit("change", val);
         this.$nextTick(function () {
             //数据验证
-            this.checkVal(val);
+            _this.checkVal();
         });
     };
     //dataKey属性变化事件
@@ -6209,59 +6472,14 @@ var v_form_itemvue_type_script_lang_ts_VFormItem = /** @class */ (function (_sup
     //数据验证
     VFormItem.prototype.checkVal = function (val) {
         var validType = this.dataKey.valid || "";
-        var errMsg = "";
+        var result = true;
         var handleValid;
         var args;
         val = val || this.value;
-        //禁用 忽略 或隐藏
-        if (this.dataKey.disabled || this.dataKey.ignore || this.dataKey.show === false) {
-            this.error = "";
-            return true;
-        }
-        //不是必填 值为空 或者空数组（多个复选框）
-        if (val === "" || (Array.isArray(val) && val.length === 0)) {
-            if (this.dataKey.required === false) {
-                this.error = "";
-                return true;
-            }
-            this.error = _("此项必填");
-            return false;
-        }
-        //未定义验证类型时
-        if (!validType) {
-            this.error = "";
-            return true;
-        }
-        //当值在选项框内时，不做数据验证，用于select
-        if (Array.isArray(this.dataKey.sortArray)) {
-            var hasValue = this.dataKey.sortArray.some(function (item) { return item.value === val; });
-            if (hasValue) {
-                this.error = "";
-                return true;
-            }
-        }
-        //数据验证函数
-        handleValid = this.$valid[validType] || {};
-        //验证参数
-        args = [];
-        if (this.dataKey.min != undefined) {
-            args.push(this.dataKey.min);
-        }
-        if (this.dataKey.max != undefined) {
-            args.push(this.dataKey.max);
-        }
-        if (this.dataKey.msg != undefined) {
-            args.push(this.dataKey.msg);
-        }
-        if (typeof handleValid == "function") {
-            errMsg = handleValid.apply(void 0, Object(tslib_es6["c" /* __spreadArrays */])([val], args));
-        }
-        else if (typeof handleValid.all === "function") {
-            errMsg = handleValid.all.apply(handleValid, Object(tslib_es6["c" /* __spreadArrays */])([val], args));
-        }
+        result = libs["checkData"].call(this, this.dataKey, val);
         //错误文字信息
-        this.error = this.dataKey.msg || errMsg || "";
-        return !errMsg;
+        this.error = this.dataKey.error || "";
+        return result;
     };
     VFormItem.prototype.onTitleChanged = function () {
         if (this.$refs.labelTxt) {
@@ -6303,6 +6521,9 @@ var v_form_itemvue_type_script_lang_ts_VFormItem = /** @class */ (function (_sup
         Object(vue_property_decorator["c" /* Prop */])({ default: "" })
     ], VFormItem.prototype, "helpText", void 0);
     Object(tslib_es6["a" /* __decorate */])([
+        Object(vue_property_decorator["c" /* Prop */])({ default: false })
+    ], VFormItem.prototype, "disabled", void 0);
+    Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["b" /* Model */])("change")
     ], VFormItem.prototype, "value", void 0);
     Object(tslib_es6["a" /* __decorate */])([
@@ -6321,7 +6542,7 @@ var v_form_itemvue_type_script_lang_ts_VFormItem = /** @class */ (function (_sup
 // CONCATENATED MODULE: ./src/components/form/v-form-item.vue?vue&type=script&lang=ts&
  /* harmony default export */ var form_v_form_itemvue_type_script_lang_ts_ = (v_form_itemvue_type_script_lang_ts_); 
 // EXTERNAL MODULE: ./src/components/form/v-form-item.vue?vue&type=style&index=0&id=83e767ac&lang=scss&scoped=true&
-var v_form_itemvue_type_style_index_0_id_83e767ac_lang_scss_scoped_true_ = __webpack_require__(26);
+var v_form_itemvue_type_style_index_0_id_83e767ac_lang_scss_scoped_true_ = __webpack_require__(27);
 
 // EXTERNAL MODULE: ./node_modules/vue-loader/lib/runtime/componentNormalizer.js
 var componentNormalizer = __webpack_require__(2);
@@ -6352,7 +6573,7 @@ component.options.__file = "src/components/form/v-form-item.vue"
 /* harmony default export */ var v_form_item = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 49 */
+/* 51 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6464,7 +6685,7 @@ component.options.__file = "src/components/item/v-item.vue"
 /* harmony default export */ var v_item = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6477,7 +6698,7 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "form-text-content", class: _vm.css }, [
-    _vm._v("\n  " + _vm._s(_vm.value) + "\n")
+    _vm._v("\r\n      " + _vm._s(_vm.value) + "\r\n    ")
   ])
 }
 var staticRenderFns = []
@@ -6548,7 +6769,7 @@ component.options.__file = "src/components/text/v-text.vue"
 /* harmony default export */ var v_text = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6589,6 +6810,14 @@ var render = function() {
             },
             [
               _c("input", {
+                directives: [
+                  {
+                    name: "manualevent",
+                    rawName: "v-manualevent",
+                    value: _vm.evtHandlerList,
+                    expression: "evtHandlerList"
+                  }
+                ],
                 ref: "input",
                 refInFor: true,
                 staticClass: "text",
@@ -6596,6 +6825,7 @@ var render = function() {
                   type: "text",
                   disabled: _vm.disabled,
                   "data-index": index,
+                  "evt-name": _vm.evtName,
                   maxlength: _vm.maxlength
                 },
                 domProps: { value: _vm.inputVal[index] },
@@ -6642,10 +6872,18 @@ render._withStripped = true
 // EXTERNAL MODULE: ./node_modules/tslib/tslib.es6.js
 var tslib_es6 = __webpack_require__(0);
 
+// EXTERNAL MODULE: ./node_modules/vue-class-component/dist/vue-class-component.esm.js
+var vue_class_component_esm = __webpack_require__(3);
+
 // EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
 var vue_property_decorator = __webpack_require__(1);
 
+// EXTERNAL MODULE: ./src/components/add-event.ts
+var add_event = __webpack_require__(4);
+
 // CONCATENATED MODULE: ./node_modules/ts-loader??ref--4!./node_modules/vue-loader/lib??vue-loader-options!./src/components/column/v-column.vue?vue&type=script&lang=ts&
+
+
 
 
 function getCursorPos(ctrl) {
@@ -6698,22 +6936,20 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
         this.$emit("changeProp", key, val);
     };
     VInputGroup.prototype.handlerKeyDown = function (event) {
-        var evtTarget = event.target, val = evtTarget.value, index = Number(evtTarget.getAttribute("data-index")), keyVal = event.char || event.key, keyCode = event.keyCode, maxIndex = this.inputList.length - 1, position;
+        var evtTarget = event.target, val = evtTarget.value, index = Number(evtTarget.getAttribute("data-index")), keyVal = event.char || event.key, keyCode = event.keyCode, maxIndex = this.inputList.length - 1, position = getCursorPos(evtTarget); //光标位置
         var inputElArr = this.input;
         if (keyCode === 8) {
             if (!this.eventKeyDown) {
                 this.eventKeyDown = true;
                 this.clickIndex = index;
             }
-            position = getCursorPos(evtTarget); //光标位置
             if (position === 0) {
-                evtTarget.value = "";
+                //evtTarget.value = "";
             }
             //this.setValue();
         }
         else if (keyCode == 39 || keyCode == 40) {
             //右 或者下
-            position = getCursorPos(evtTarget); //光标位置
             if (position === evtTarget.value.length) {
                 if (index !== maxIndex) {
                     inputElArr[index + 1].focus();
@@ -6723,7 +6959,6 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
             }
         }
         else if (keyCode == 37 || keyCode == 38) {
-            position = getCursorPos(evtTarget); //光标位置
             if (position === 0) {
                 if (index !== 0) {
                     inputElArr[index - 1].focus();
@@ -6733,9 +6968,9 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
             }
         }
         //回退
-        if (keyCode === 8 && val === "") {
+        if (keyCode === 8 && position === 0) {
             index != 0 && inputElArr[index - 1].focus();
-            event.preventDefault();
+            //event.preventDefault();
             return;
         }
         if (keyVal === this.splitter) {
@@ -6757,9 +6992,6 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
                 }
             }
             position = getCursorPos(evtTarget); //光标位置
-            if (position === 0) {
-                evtTarget.value = "";
-            }
             this.setValue();
             return;
         }
@@ -6796,7 +7028,7 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
         }
     };
     VInputGroup.prototype.onDisabledChanged = function (newValue) {
-        if (!newValue) {
+        if (newValue) {
             this.changeProp("error", "");
         }
     };
@@ -6858,7 +7090,7 @@ var v_columnvue_type_script_lang_ts_VInputGroup = /** @class */ (function (_supe
         vue_property_decorator["a" /* Component */]
     ], VInputGroup);
     return VInputGroup;
-}(vue_property_decorator["e" /* Vue */]));
+}(Object(vue_class_component_esm["c" /* mixins */])(add_event["a" /* default */])));
 /* harmony default export */ var v_columnvue_type_script_lang_ts_ = (v_columnvue_type_script_lang_ts_VInputGroup);
 
 // CONCATENATED MODULE: ./src/components/column/v-column.vue?vue&type=script&lang=ts&
@@ -6891,7 +7123,7 @@ component.options.__file = "src/components/column/v-column.vue"
 /* harmony default export */ var v_column = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 52 */
+/* 54 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6922,10 +7154,18 @@ render._withStripped = true
 // EXTERNAL MODULE: ./node_modules/tslib/tslib.es6.js
 var tslib_es6 = __webpack_require__(0);
 
+// EXTERNAL MODULE: ./node_modules/vue-class-component/dist/vue-class-component.esm.js
+var vue_class_component_esm = __webpack_require__(3);
+
 // EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
 var vue_property_decorator = __webpack_require__(1);
 
+// EXTERNAL MODULE: ./src/components/add-event.ts
+var add_event = __webpack_require__(4);
+
 // CONCATENATED MODULE: ./node_modules/ts-loader??ref--4!./node_modules/vue-loader/lib??vue-loader-options!./src/components/ip/v-ip.vue?vue&type=script&lang=ts&
+
+
 
 
 var v_ipvue_type_script_lang_ts_VIp = /** @class */ (function (_super) {
@@ -6988,7 +7228,7 @@ var v_ipvue_type_script_lang_ts_VIp = /** @class */ (function (_super) {
         vue_property_decorator["a" /* Component */]
     ], VIp);
     return VIp;
-}(vue_property_decorator["e" /* Vue */]));
+}(Object(vue_class_component_esm["c" /* mixins */])(add_event["a" /* default */])));
 /* harmony default export */ var v_ipvue_type_script_lang_ts_ = (v_ipvue_type_script_lang_ts_VIp);
 
 // CONCATENATED MODULE: ./src/components/ip/v-ip.vue?vue&type=script&lang=ts&
@@ -7021,7 +7261,7 @@ component.options.__file = "src/components/ip/v-ip.vue"
 /* harmony default export */ var v_ip = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 53 */
+/* 55 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7052,10 +7292,18 @@ render._withStripped = true
 // EXTERNAL MODULE: ./node_modules/tslib/tslib.es6.js
 var tslib_es6 = __webpack_require__(0);
 
+// EXTERNAL MODULE: ./node_modules/vue-class-component/dist/vue-class-component.esm.js
+var vue_class_component_esm = __webpack_require__(3);
+
 // EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
 var vue_property_decorator = __webpack_require__(1);
 
+// EXTERNAL MODULE: ./src/components/add-event.ts
+var add_event = __webpack_require__(4);
+
 // CONCATENATED MODULE: ./node_modules/ts-loader??ref--4!./node_modules/vue-loader/lib??vue-loader-options!./src/components/mac/v-mac.vue?vue&type=script&lang=ts&
+
+
 
 
 var v_macvue_type_script_lang_ts_VMac = /** @class */ (function (_super) {
@@ -7118,7 +7366,7 @@ var v_macvue_type_script_lang_ts_VMac = /** @class */ (function (_super) {
         vue_property_decorator["a" /* Component */]
     ], VMac);
     return VMac;
-}(vue_property_decorator["e" /* Vue */]));
+}(Object(vue_class_component_esm["c" /* mixins */])(add_event["a" /* default */])));
 /* harmony default export */ var v_macvue_type_script_lang_ts_ = (v_macvue_type_script_lang_ts_VMac);
 
 // CONCATENATED MODULE: ./src/components/mac/v-mac.vue?vue&type=script&lang=ts&
@@ -7151,7 +7399,7 @@ component.options.__file = "src/components/mac/v-mac.vue"
 /* harmony default export */ var v_mac = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 54 */
+/* 56 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7181,7 +7429,7 @@ var render = function() {
           _c("div", { staticClass: "file-btn-group" }, [
             _c("a", { staticClass: "btn icon-file-upload", class: _vm.css }, [
               _c("span", { staticClass: "file-title" }, [
-                _vm._v(_vm._s(_vm._("选择文件")))
+                _vm._v(_vm._s(_vm._("Select a file")))
               ]),
               _vm._v(" "),
               _c("input", {
@@ -7201,18 +7449,18 @@ var render = function() {
               ])
             : _vm._e(),
           _vm._v(" "),
-          _vm.fileStr == ""
+          _vm.fileStr == "" && _vm.hasTips
             ? _c("div", { staticClass: "file-tips" }, [
-                _c("span", [_vm._v("未选择任何文件")])
+                _c("span", [_vm._v(_vm._s(_vm._("No file selected")))])
               ])
             : _vm._e()
         ]),
         _vm._v(" "),
-        _vm.hasUpBtn == "true"
+        _vm.hasUpBtn
           ? _c("v-button", {
               attrs: {
                 title: _vm.btnVal,
-                css: "btn-active text-white",
+                css: "form-primary-btn",
                 callback: _vm.submit
               }
             })
@@ -7281,7 +7529,7 @@ var v_uploadvue_type_script_lang_ts_VUpload = /** @class */ (function (_super) {
     };
     VUpload.prototype.submit = function () {
         if (this.fileStr === "") {
-            this.$message("请选择文件");
+            this.$message(_("Please select a file"));
             return;
         }
         this.clickCallBack();
@@ -7297,7 +7545,7 @@ var v_uploadvue_type_script_lang_ts_VUpload = /** @class */ (function (_super) {
         Object(vue_property_decorator["c" /* Prop */])()
     ], VUpload.prototype, "uploadUrl", void 0);
     Object(tslib_es6["a" /* __decorate */])([
-        Object(vue_property_decorator["c" /* Prop */])({ default: _("上传文件") })
+        Object(vue_property_decorator["c" /* Prop */])({ default: _("Upload") })
     ], VUpload.prototype, "btnVal", void 0);
     Object(tslib_es6["a" /* __decorate */])([
         Object(vue_property_decorator["c" /* Prop */])({ default: false })
@@ -7363,7 +7611,7 @@ component.options.__file = "src/components/upload/v-upload.vue"
 /* harmony default export */ var v_upload = __webpack_exports__["default"] = (component.exports);
 
 /***/ }),
-/* 55 */
+/* 57 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7404,8 +7652,13 @@ var render = function() {
               _vm._v(" "),
               _c("div", { staticClass: "content" }, [
                 _vm.parseHtml
-                  ? _c("div", { domProps: { innerHTML: _vm._s(_vm.content) } })
-                  : _c("div", [_vm._v(_vm._s(_vm.content))])
+                  ? _c("div", {
+                      staticClass: "content-tips",
+                      domProps: { innerHTML: _vm._s(_vm.content) }
+                    })
+                  : _c("div", { staticClass: "content-tips" }, [
+                      _vm._v(_vm._s(_vm.content))
+                    ])
               ]),
               _vm._v(" "),
               _c("div", { staticClass: "btn-group" }, [
@@ -7429,7 +7682,7 @@ var render = function() {
                   },
                   [_vm._v(_vm._s(_vm.cancelText))]
                 ),
-                _vm._v("   \n          "),
+                _vm._v("   \r\n            "),
                 _c(
                   "button",
                   {
@@ -7471,8 +7724,8 @@ var MessageBoxvue_type_script_lang_ts_MessageBox = /** @class */ (function (_sup
         _this.title = "";
         _this.isShowMessageBox = false;
         _this.parseHtml = false;
-        _this.okText = ("确定");
-        _this.cancelText = ("取消");
+        _this.okText = _("OK");
+        _this.cancelText = _("Cancel");
         _this.content = "";
         _this.resolve = function () { };
         _this.reject = function () { };
@@ -7486,7 +7739,6 @@ var MessageBoxvue_type_script_lang_ts_MessageBox = /** @class */ (function (_sup
     MessageBox.prototype.cancel = function () {
         this.isShowMessageBox = false;
         if (this.hasCancel) {
-            //todo: 处理没有reject的情况
             this.reject();
         }
     };
@@ -7535,6 +7787,250 @@ var component = Object(componentNormalizer["a" /* default */])(
 if (false) { var api; }
 component.options.__file = "src/components/MessageBox.vue"
 /* harmony default export */ var components_MessageBox = __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+/* 58 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./src/components/Dropdown.vue?vue&type=template&id=d436187e&
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("transition", { attrs: { name: "fade" } }, [
+    _vm.show && !_vm.disabled
+      ? _c(
+          "ul",
+          {
+            ref: "dropdown",
+            staticClass: "select-dropdown -r-select-dropdown",
+            class: _vm.css,
+            style: {
+              top: _vm.dropdownTop + "px",
+              left: _vm.dropdownLeft + "px",
+              minWidth: _vm.minWidth + "px",
+              width: "auto !important"
+            }
+          },
+          [
+            _vm._l(_vm.sortArray, function(item) {
+              return [
+                _c(
+                  "li",
+                  {
+                    key: item.value,
+                    staticClass: "select-li",
+                    class: {
+                      active: _vm.value == item.value,
+                      disabled: item.disabled
+                    },
+                    attrs: { value: item.value },
+                    on: {
+                      click: function($event) {
+                        $event.stopPropagation()
+                        return _vm.changeSelect(
+                          item.value,
+                          item.title,
+                          item.disabled
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _vm._v("\n        " + _vm._s(item.title) + "\n        "),
+                    item.css ? _c("span", { class: item.css }) : _vm._e()
+                  ]
+                )
+              ]
+            }),
+            _vm._v(" "),
+            _c(
+              "li",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.hasManual,
+                    expression: "hasManual"
+                  }
+                ],
+                staticClass: "select-li",
+                on: {
+                  click: function($event) {
+                    $event.stopPropagation()
+                    return _vm.hanlderManual()
+                  }
+                }
+              },
+              [_vm._v("\n      " + _vm._s(_vm.manualText) + "\n    ")]
+            )
+          ],
+          2
+        )
+      : _vm._e()
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+// CONCATENATED MODULE: ./src/components/Dropdown.vue?vue&type=template&id=d436187e&
+
+// EXTERNAL MODULE: ./node_modules/tslib/tslib.es6.js
+var tslib_es6 = __webpack_require__(0);
+
+// EXTERNAL MODULE: ./node_modules/vue-property-decorator/lib/vue-property-decorator.js
+var vue_property_decorator = __webpack_require__(1);
+
+// CONCATENATED MODULE: ./node_modules/ts-loader??ref--4!./node_modules/vue-loader/lib??vue-loader-options!./src/components/Dropdown.vue?vue&type=script&lang=ts&
+
+
+var Dropdownvue_type_script_lang_ts_Dropdown = /** @class */ (function (_super) {
+    Object(tslib_es6["b" /* __extends */])(Dropdown, _super);
+    function Dropdown() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.relativeVm = {}; //关联的下拉框组件
+        _this.css = "";
+        _this.dropdownLeft = 0;
+        _this.dropdownTop = 0;
+        _this.minWidth = 0;
+        return _this;
+    }
+    Object.defineProperty(Dropdown.prototype, "hasManual", {
+        get: function () {
+            return this.relativeVm.hasManual;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "show", {
+        get: function () {
+            if (this.relativeVm.dropdownShow) {
+                this.bindEvt();
+                this.$nextTick(function () {
+                    this.setPosition();
+                });
+            }
+            else {
+                this.unbindEvt();
+            }
+            return this.relativeVm.dropdownShow;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "value", {
+        get: function () {
+            return this.relativeVm.value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "manualText", {
+        get: function () {
+            return this.relativeVm.manualText;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "disabled", {
+        get: function () {
+            return this.relativeVm.disabled;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Dropdown.prototype, "sortArray", {
+        get: function () {
+            return this.relativeVm.sortArray;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Dropdown.prototype.hanlderManual = function () {
+        this.relativeVm.hanlderManual();
+    };
+    Dropdown.prototype.changeSelect = function () {
+        var _a;
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        (_a = this.relativeVm).changeSelect.apply(_a, args);
+    };
+    Dropdown.prototype.bindEvt = function () {
+        window.addEventListener("resize", this.setPosition);
+        window.addEventListener("scroll", this.setPosition, true);
+    };
+    Dropdown.prototype.unbindEvt = function () {
+        window.removeEventListener("resize", this.setPosition);
+        window.removeEventListener("scroll", this.setPosition, true);
+    };
+    Dropdown.prototype.setPosition = function () {
+        //不显示
+        if (!this.relativeVm.dropdownShow) {
+            return;
+        }
+        var inputRect = this.relativeVm.inputtext.getBoundingClientRect(), bodyHeight = document.body.clientHeight;
+        //当可输入时
+        if (inputRect.left === inputRect.right) {
+            inputRect = this.relativeVm.input.getBoundingClientRect();
+        }
+        this.$nextTick(function () {
+            //滚动条位置
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop, scrollLeft = (window.pageXOffset || document.documentElement.scrollLeft) +
+                document.body.scrollLeft;
+            var dropdownHeight = this.$refs.dropdown.clientHeight;
+            this.dropdownTop = inputRect.bottom + scrollTop;
+            this.dropdownLeft = inputRect.left + scrollLeft;
+            this.minWidth = inputRect.right - inputRect.left;
+            if (this.dropdownTop + dropdownHeight > bodyHeight) {
+                //超出body高度时
+                this.dropdownTop = inputRect.top - dropdownHeight - 12;
+            }
+            this.dropdownTop += document.body.scrollTop;
+        });
+    };
+    Dropdown = Object(tslib_es6["a" /* __decorate */])([
+        vue_property_decorator["a" /* Component */]
+    ], Dropdown);
+    return Dropdown;
+}(vue_property_decorator["e" /* Vue */]));
+/* harmony default export */ var Dropdownvue_type_script_lang_ts_ = (Dropdownvue_type_script_lang_ts_Dropdown);
+
+// CONCATENATED MODULE: ./src/components/Dropdown.vue?vue&type=script&lang=ts&
+ /* harmony default export */ var components_Dropdownvue_type_script_lang_ts_ = (Dropdownvue_type_script_lang_ts_); 
+// EXTERNAL MODULE: ./node_modules/vue-loader/lib/runtime/componentNormalizer.js
+var componentNormalizer = __webpack_require__(2);
+
+// CONCATENATED MODULE: ./src/components/Dropdown.vue
+
+
+
+
+
+/* normalize component */
+
+var component = Object(componentNormalizer["a" /* default */])(
+  components_Dropdownvue_type_script_lang_ts_,
+  render,
+  staticRenderFns,
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "src/components/Dropdown.vue"
+/* harmony default export */ var components_Dropdown = __webpack_exports__["default"] = (component.exports);
 
 /***/ })
 /******/ ])["default"];

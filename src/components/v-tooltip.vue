@@ -1,5 +1,5 @@
 <template>
-  <transition>
+<transition>
     <div
       ref="tooltip"
       v-if="parseHtml"
@@ -11,7 +11,6 @@
       <div v-html="content" ref="text"></div>
       <div class="triangle-bottom"></div>
     </div>
-
     <div
       ref="tooltip"
       v-else
@@ -24,6 +23,7 @@
     </div>
   </transition>
 </template>
+
 <script lang="js">
 export default {
   data() {
@@ -44,13 +44,13 @@ export default {
   methods: {
     updatePosition() {
       this.$refs.tooltip.style.minWidth = "";
-      this.$nextTick(function() {
+      this.$nextTick(function () {
         let clientRect = this.$refs.tooltip.getBoundingClientRect(),
-          bodyWidth = document.body.clientWidth,
-          tooltipWidth = clientRect.right - clientRect.left,
-          textWidth = this.$refs.text.clientWidth;
+            bodyWidth = document.body.clientWidth,
+            tooltipWidth = clientRect.right - clientRect.left,
+            textWidth = this.$refs.text.clientWidth;
         //文本宽度
-        if(textWidth < this.relativeWidth) {
+        if (textWidth < this.relativeWidth) {
           this.minWidth = textWidth;
         } else {
           this.minWidth = this.relativeWidth;
@@ -67,3 +67,4 @@ export default {
   }
 };
 </script>
+

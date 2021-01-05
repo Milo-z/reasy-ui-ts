@@ -1,7 +1,7 @@
-import Item from "./v-item.vue";
+import VItem from "./v-item.vue";
 /* istanbul ignore next */
-Item.install = function(Vue) {
-  Vue.component(Item.name, Item);
+VItem.install = function (Vue) {
+  Vue.component(VItem.name, VItem);
 };
 
-export default Item;
+export default VItem;

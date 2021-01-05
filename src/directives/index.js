@@ -1,18 +1,18 @@
 import Tooltip from '../components/v-tooltip';
-import {
-  isDefined
-} from "../components/libs.ts";
+import { isDefined } from "../components/libs.ts";
 
 let startClick;
 let seed = 0;
 let nodeList = [];
 const ctx = '@@clickoutsideContext';
 
-document.addEventListener('mousedown', e => (startClick = e));
+document.addEventListener('mousedown', e => startClick = e);
 
 document.addEventListener('mouseup', e => {
+  const dropdownEl = document.getElementsByClassName("-r-select-dropdown")[0];
   nodeList.forEach(node => {
-    if (!node.contains(e.target)) { //当点击元素不是当前node的子元素时
+    if (!node.contains(e.target) && (!dropdownEl || !dropdownEl.contains(e.target))) {
+      //当点击元素不是当前node的子元素时
       node[ctx].documentHandler(e, startClick);
     }
   });
@@ -20,13 +20,9 @@ document.addEventListener('mouseup', e => {
 
 function createDocumentHandler(el, binding, vnode) {
   return function () {
-    if (!vnode ||
-      !vnode.context)
-      return;
+    if (!vnode || !vnode.context) return;
 
-    if (binding.expression &&
-      el[ctx].methodName &&
-      vnode.context[el[ctx].methodName]) {
+    if (binding.expression && el[ctx].methodName && vnode.context[el[ctx].methodName]) {
       vnode.context[el[ctx].methodName]();
     } else {
       el[ctx].bindingFn && el[ctx].bindingFn();
@@ -37,9 +33,9 @@ function createDocumentHandler(el, binding, vnode) {
 const install = function (Vue) {
   const TooltipBox = Vue.extend(Tooltip);
   let tooltipBox = new TooltipBox(),
-    msgBoxEl = tooltipBox.$mount().$el;
+      msgBoxEl = tooltipBox.$mount().$el;
 
-  window.addEventListener("scroll", function () {
+  document.body.addEventListener("scroll", function () {
     tooltipBox.show = false;
   });
 
@@ -57,7 +53,8 @@ const install = function (Vue) {
       if (isDefined(binding.value)) {
         tooltipBox.content = binding.value;
       } else {
-        if (this.querySelector("[v-tooltip]")) { //自定义生成
+        if (this.querySelector("[v-tooltip]")) {
+          //自定义生成
           tooltipBox.content = this.querySelector("[v-tooltip]").getAttribute("v-tooltip");
         } else {
           tooltipBox.content = binding.value || "";
@@ -73,7 +70,8 @@ const install = function (Vue) {
       if (isDefined(binding.value)) {
         tooltipBox.content = binding.value;
       } else {
-        if (this.querySelector("[v-tooltip]")) { //自定义生成
+        if (this.querySelector("[v-tooltip]")) {
+          //自定义生成
           tooltipBox.content = this.querySelector("[v-tooltip]").getAttribute("v-tooltip");
         } else {
           tooltipBox.content = binding.value || "";
@@ -94,7 +92,6 @@ const install = function (Vue) {
       tooltipNode.binding = null;
       tooltipNode.tooltipBox = null;
     });
-
   }
   let directiveConfig = {
     // 注册一个局部的自定义指令 v-focus
@@ -148,14 +145,14 @@ const install = function (Vue) {
     manualevent: {
       inserted(el, binding) {
         let evtNameArr = el.getAttribute("evt-name").split(";"),
-          bindFn = binding.value;
+            bindFn = binding.value;
         for (let i = 0; i < evtNameArr.length; i++) {
           el.addEventListener(evtNameArr[i], bindFn[i]);
         }
       },
       unbind(el, binding) {
         let evtNameArr = el.getAttribute("evt-name").split(";"),
-          bindFn = binding.value;
+            bindFn = binding.value;
         for (let i = 0; i < evtNameArr.length; i++) {
           el.removeEventListener(evtNameArr[i], bindFn[i]);
         }

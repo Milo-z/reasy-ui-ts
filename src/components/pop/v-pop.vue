@@ -1,5 +1,5 @@
 <template>
-  <transition name="pop-fade">
+<transition name="pop-fade">
     <div class="pop-wrapper" v-show="visible" @click="popClose">
       <div
         class="pop-box"
@@ -226,3 +226,4 @@ export default class VPop extends Vue {
   }
 }
 </script>
+

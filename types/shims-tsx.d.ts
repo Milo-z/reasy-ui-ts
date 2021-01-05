@@ -8,12 +8,14 @@ declare module "vue/types/vue" {
     $valid: ObjectAny;
     $isMobile: boolean;
     $message: Function;
+    _dropdown: Function;
     $success: Function;
     $checkData: Function;
     $confirm: Function;
     $dispatch: Function;
     $getLabelWidth: Function;
     _: Function;
+    $colonTips: String;
   }
 }
 
@@ -61,11 +63,6 @@ declare global {
 
   interface Document{
     selection: any;
-  }
-
-  interface Valid {
-    type: string;
-    args?: Array<string>;
   }
 
   interface HTMLElement {

@@ -1,5 +1,5 @@
 <template>
-  <div
+<div
     class="form-el-content form-input"
     :class="{ 'error-group': error, [css]: true }"
     v-show="show"
@@ -17,6 +17,8 @@
           class="text"
           :value="inputVal[index]"
           :data-index="index"
+          v-manualevent="evtHandlerList"
+          :evt-name="evtName"
           :maxlength="maxlength"
           @focus="isFocus = true"
           @blur="isFocus = false"
@@ -32,7 +34,9 @@
 </template>
 
 <script lang="ts">
+import { mixins } from "vue-class-component";
 import { Vue, Prop, Ref, Component, Watch } from "vue-property-decorator";
+import EventMixin from "../add-event";
 
 function getCursorPos(ctrl: HTMLInputElement): number {
   let Sel,
@@ -51,7 +55,7 @@ function getCursorPos(ctrl: HTMLInputElement): number {
 }
 
 @Component
-export default class VInputGroup extends Vue {
+export default class VInputGroup extends mixins(EventMixin) {
   @Prop({ default: true }) readonly required!: boolean; //是否为必填项
   @Prop({ default: "" }) readonly css!: string; //样式
   @Prop({ default: true }) readonly show!: boolean; //是否显示
@@ -104,7 +108,7 @@ export default class VInputGroup extends Vue {
       keyVal = event.char || event.key,
       keyCode = event.keyCode,
       maxIndex = this.inputList.length - 1,
-      position;
+      position = getCursorPos(evtTarget); //光标位置
 
     let inputElArr = this.input;
 
@@ -113,14 +117,12 @@ export default class VInputGroup extends Vue {
         this.eventKeyDown = true;
         this.clickIndex = index;
       }
-      position = getCursorPos(evtTarget); //光标位置
       if (position === 0) {
-        evtTarget.value = "";
+        //evtTarget.value = "";
       }
       //this.setValue();
     } else if (keyCode == 39 || keyCode == 40) {
       //右 或者下
-      position = getCursorPos(evtTarget); //光标位置
       if (position === evtTarget.value.length) {
         if (index !== maxIndex) {
           inputElArr[index + 1].focus();
@@ -129,7 +131,6 @@ export default class VInputGroup extends Vue {
         }
       }
     } else if (keyCode == 37 || keyCode == 38) {
-      position = getCursorPos(evtTarget); //光标位置
       if (position === 0) {
         if (index !== 0) {
           inputElArr[index - 1].focus();
@@ -139,9 +140,9 @@ export default class VInputGroup extends Vue {
       }
     }
     //回退
-    if (keyCode === 8 && val === "") {
+    if (keyCode === 8 && position === 0) {
       index != 0 && inputElArr[index - 1].focus();
-      event.preventDefault();
+      //event.preventDefault();
       return;
     }
     if (keyVal === this.splitter) {
@@ -175,9 +176,6 @@ export default class VInputGroup extends Vue {
         }
       }
       position = getCursorPos(evtTarget); //光标位置
-      if (position === 0) {
-        evtTarget.value = "";
-      }
       this.setValue();
       return;
     }
@@ -223,7 +221,7 @@ export default class VInputGroup extends Vue {
 
   @Watch("disabled")
   onDisabledChanged(newValue: boolean) {
-    if (!newValue) {
+    if (newValue) {
       this.changeProp("error", "");
     }
   }
@@ -233,3 +231,4 @@ export default class VInputGroup extends Vue {
   }
 }
 </script>
+

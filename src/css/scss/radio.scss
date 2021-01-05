@@ -2,7 +2,7 @@
     display: inline-block;
     margin-right: 20px;
     line-height: $form-line-height;
-    height: $form-line-height;
+    //height: $form-line-height;
     cursor: pointer;
     .raido-item {
         vertical-align: middle;
@@ -18,7 +18,8 @@
         }
     }
     .radio-text {
+        max-width: 93%;
         display: inline-block;
-        vertical-align: middle;
+        vertical-align: top;
     }
 }

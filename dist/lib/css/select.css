@@ -58,6 +58,7 @@
 
 .form-select .input-text .text-tips {
   overflow: hidden;
+  word-break: break-all;
 }
 
 .form-select .input-text.active {
@@ -70,9 +71,8 @@
   background: #f2f2f2;
 }
 
-.form-select .select-dropdown {
+.select-dropdown {
   position: absolute;
-  min-width: 100%;
   list-style: none;
   border: solid 1px #e4e7ed;
   -webkit-border-radius: 4px;
@@ -90,13 +90,13 @@
   padding: 16px 0;
 }
 
-.form-select .select-dropdown .select-li {
+.select-dropdown .select-li {
   padding: 0 16px;
   line-height: 32px;
   white-space: nowrap;
 }
 
-.form-select .select-dropdown .select-li:hover {
+.select-dropdown .select-li:hover {
   background: #ddd;
 }
 

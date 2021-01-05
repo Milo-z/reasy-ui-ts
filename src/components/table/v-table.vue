@@ -1,5 +1,5 @@
 <template>
-  <div :class="css">
+<div :class="css">
     <div class="table-search" v-if="search">
       <input
         type="text"
@@ -17,7 +17,7 @@
     <table
       v-if="hasHead"
       class="table table-fixed table-header"
-      :style="{ 'padding-right': tableScroll ? '17px' : '' }"
+      :style="{ 'padding-right': tableScroll ? tableScrollWidth + 'px' : '' }"
     >
       <thead>
         <tr>
@@ -33,6 +33,7 @@
     <div class="table-body" :style="{ height: bodyHeight != '' ? bodyHeight + 'px' : 'auto' }">
       <table class="table table-fixed" ref="table-body">
         <tbody>
+          <slot name="header"></slot>
           <tr
             ref="table-body-tr"
             @click="clickRow(rowsData)"
@@ -48,7 +49,7 @@
                   :data-key="checkboxOptions"
                 ></v-form-item>
                 <!-- 有slot内容 -->
-                <v-td v-else-if="col.fn" :rowsData="rowsData" :fn="col.fn" :index="rowIndex"></v-td>
+                <v-td class="fixed" v-else-if="col.fn" :rowsData="rowsData" :fn="col.fn" :index="rowIndex"></v-td>
                 <span v-else-if="col.tooltip" v-tooltip="rowsData[col.field]">{{ rowsData[col.field] }}</span>
                 <span v-else>{{ rowsData[col.field] }}</span>
               </td>
@@ -88,6 +89,7 @@
     </div>
   </div>
 </template>
+
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { copyDeepData } from "../libs";
@@ -184,6 +186,20 @@ Vue.component("VTableCol", {
   },
   render: function(createElement) {
     return createElement("div");
+  },
+  watch: {
+    title(val) {
+      this.$dispatch("VTable", "update.column", {
+        width: this.width,
+        title: this.title,
+        field: this.field,
+        selectAll: this.selectAll !== false,
+        isSearch: this.isSearch !== false,
+        fn: this.$scopedSlots.default,
+        tooltip: this.tooltip !== false,
+        css: this.css
+      });
+    }
   }
 });
 
@@ -192,7 +208,7 @@ Vue.component("VTd", {
   render: function(createElement) {
     this.rowsData.$index = this.index;
     return createElement("div", [this.fn(this.rowsData)]);
-  }
+  },
 });
 const CHECKBOX_UNCHECKED = "0";
 const CHECKBOX_CHECKED = "1";
@@ -208,19 +224,19 @@ export default class VTable extends Vue {
   @Prop() data!: Array<ObjectAny>;
   @Prop() css!: string;
   @Prop({ default: false }) isLoading!: boolean; //是否正在loading
-  @Prop({ default: _("加载中") }) loadingText!: string; //loading 文本
-  @Prop({ default: _("暂无数据") }) noData!: string; //没有数据时提示信息
+  @Prop({ default: _("Loading...") }) loadingText!: string; //loading 文本
+  @Prop({ default: "" }) noData!: string; //没有数据时提示信息
   @Prop({ default: 10 }) maxRow!: number; //表格最多显示多少行
   @Prop({ default: 10 }) perPage!: number; //表格最多显示多少行
   @Prop({ default: true }) hasHead!: boolean; //是否显示表头
   @Prop({ default: false }) showPage!: boolean; //是否分页
 
   get pageTips() {
-    return _("第%s页，共%s页", [this.page, this.totalPage]);
+    return _("Page %s, Total %s pages", [this.page, this.totalPage]);
   }
 
   get dataTips() {
-    return _("总共%s条数据", [this.tableData.length || 0]);
+    return _("Total %s items", [this.tableData.length || 0]);
   }
   get totalPage() {
     return Math.ceil(this.tableData.length / this.perPage);
@@ -303,6 +319,7 @@ export default class VTable extends Vue {
   columns: Array<ObjectAny> = []; //表头信息
   checkboxField = "";
   tableScroll = false;
+  tableScrollWidth = 17;
   bodyHeight = 0;
   tableData = []; //表格数据
   checkboxAllVal = CHECKBOX_UNCHECKED; //全选
@@ -364,6 +381,21 @@ export default class VTable extends Vue {
       }
 
       this.columns.push(item);
+    });
+
+    this.$on("update.column", (item: ObjectAny) => {
+      let exsitIndex = -1;
+      let exsitCol = this.columns.filter((colItem, index) => {
+        if(item.field == colItem.field) {
+          exsitIndex = index;
+          return true;
+        }
+      });
+      if(exsitCol.length === 0) {
+        return;
+      }
+      //替换
+      this.columns.splice(exsitIndex, 1, item);
     });
 
     this.$on("remove.column", (field: string) => {
@@ -441,6 +473,15 @@ export default class VTable extends Vue {
       } else {
         this.tableScroll = false;
       }
+      this.$nextTick(() => {
+        if(!this.tableScroll) {
+          return;
+        }
+        let tableWidth = (this.$refs["table-body"] as HTMLDivElement).offsetWidth;
+        let tableParentWidth = (this.$refs["table-body"] as any).parentNode.offsetWidth;
+
+        this.tableScrollWidth = tableParentWidth - tableWidth;
+      });
     });
   }
 
@@ -489,3 +530,4 @@ export default class VTable extends Vue {
   }
 }
 </script>
+

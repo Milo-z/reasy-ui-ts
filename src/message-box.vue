@@ -1,5 +1,5 @@
 <template>
-  <transition name="fade">
+<transition name="fade">
     <div class="dialog" v-show="show">
       <div class="dialog-container message">
         <div class="dialog-content">
@@ -13,6 +13,7 @@
     </div>
   </transition>
 </template>
+
 <script>
 export default {
   name: "v-message",
@@ -25,6 +26,7 @@ export default {
   }
 };
 </script>
+
 <style lang="scss">
 .message {
   width: 360px;
@@ -40,3 +42,4 @@ export default {
   }
 }
 </style>
+

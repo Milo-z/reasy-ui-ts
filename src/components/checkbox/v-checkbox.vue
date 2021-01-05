@@ -1,5 +1,5 @@
 <template>
-  <div class="form-el-content form-el-checkbox" v-show="show" :class="{ 'error-group': error, [css]: css }">
+<div class="form-el-content form-el-checkbox" v-show="show" :class="{ 'error-group': error, [css]: css }">
     <template v-if="hasSelectAll">
       <label
         class="form-checkbox"
@@ -60,7 +60,7 @@ export default class VCheckbox extends mixins(EventMixin) {
   @Prop({ default: false }) readonly ignore!: boolean; //是否忽略验证
   @Prop({ default: false }) readonly disabled!: boolean; //是否禁用
   @Prop({ default: false }) readonly hasSelectAll!: boolean; //是否有全选
-  @Prop({ default: _("全选") }) readonly selectAllText!: string; //全选文字
+  @Prop({ default: "" }) readonly selectAllText!: string; //全选文字
   @Prop({ default: "" }) readonly error!: string; //错误信息
   @Prop() readonly msg!: string; //自定义错误信息
   @Prop([String, Array, Boolean]) readonly value!: any; //值
@@ -192,3 +192,4 @@ export default class VCheckbox extends mixins(EventMixin) {
   }
 }
 </script>
+

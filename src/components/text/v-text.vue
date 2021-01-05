@@ -1,5 +1,5 @@
 <template>
-    <div class="form-text-content" :class="css">
+<div class="form-text-content" :class="css">
       {{value}}
     </div>
 </template>
@@ -19,3 +19,4 @@ export default class VText extends Vue {
   }
 }
 </script>
+

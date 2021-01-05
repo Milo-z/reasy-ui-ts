@@ -1151,7 +1151,9 @@ var render = function() {
           }
         }),
         _vm._v(" "),
-        _c("div", { staticClass: "slider-number" }, [_vm._v(_vm._s(_vm.vText))])
+        _c("div", { staticClass: "slider-number" }, [
+          _vm._v(_vm._s(_vm.vText) + "%")
+        ])
       ])
     ]
   )
